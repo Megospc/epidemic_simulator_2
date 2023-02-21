@@ -93,7 +93,7 @@ class Cell {
   }
   handler() {
     if (this.alive && this.land.type == 1 && this.land.pow > Math.random()) this.dead();
-    if (this.state && this.land.typ3 == 2 && this.land.pow > Math.random()) this.toState(0);
+    if (this.state && this.land.type == 2 && this.land.pow > Math.random()) this.toState(0);
     if (this.alive && this.st.time && this.time+this.st.time <= timeNow()) this.timeend();
     if (this.restend && this.restend < timeNow() && this.alive) {
       this.infectable = true;
