@@ -212,7 +212,7 @@ function newState(name, color) {
     <input type="number" id="time${num}" onchange="updateStates();" value="0"></div>
     <div><label for="protect${num}" class="label">Защита(%):</label>
     <input type="number" id="protect${num}" onchange="updateStates();" value="0"></div>
-    <p class="add" onclick="addh(${num});">Дополнительно <img src="assets/down.svg" id="add_${num}" width="12"></p>
+    <p style="font-family: Monospcace, sans-serif; font-size: 15px;" onclick="addh(${num});">Дополнительно <img src="assets/down.svg" id="add_${num}" width="12"></p>
     <div id="add${num}" style="display: none;">
       ${add}
       ${num == 0 ? "":`<div><input type="checkbox" id="pos${num}" onchange="updateStates();">
