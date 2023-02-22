@@ -206,7 +206,7 @@ function newState(name, color) {
     <input type="number" id="prob${num}" onchange="updateStates();" value="0"></div>
     <div><label for="zone${num}" class="label">Зона(пкс.):</label>
     <input type="number" id="zone${num}" onchange="updateStates();" value="0"></div>
-    ${num == 0 ? "":`<div><label for="zone${num}" class="label">Начальная попуяция(шт.):</label>
+    ${num == 0 ? "":`<div><label for="initial${num}" class="label">Начальная попуяция(шт.):</label>
     <input type="number" id="initial${num}" onchange="if (this.value != 1) $('pos${num}').checked = false; updateStates();" value="0"></div>`}
     <div><label for="time${num}" class="label">Длина жизни(с) 0 = бесконечно:</label>
     <input type="number" id="time${num}" onchange="updateStates();" value="0"></div>
