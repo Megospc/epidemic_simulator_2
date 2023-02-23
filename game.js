@@ -5,7 +5,13 @@ const lands = [
   "#00a0a0",
   "#a000a0",
   "#90a000",
-  "#a00000"
+  "#a00000",
+  "#606000",
+  "#f0a070",
+  "#a00050",
+  "#0040a0",
+  "#802000",
+  "#408020"
 ];
 var json;
 {
@@ -24,7 +30,7 @@ var json;
       { "color": "#00a0a0", "prob": 1, "initial": 1, "zone": 2.5, "protect": 0.9, "transparent": true, "name": "призраки" },
       { "color": "#00a0a0", "prob": 0.03, "initial": 1, "time": 20000, "zone": 10, "protect": 0.6, "heal": 1, "name": "насморк" },
       { "color": "#a00050", "prob": 0.01, "time": 60, "initial": 25, "zone": 10, "after": 10000, "name": "свинка" },
-      { "color": "#80a0ff", "prob": 0.03, "initial": 50, "zone": 10, "infect": 1, "protect": 0.95, "name": "доктора" },
+      { "color": "#80a0ff", "prob": 0.03, "initial": 50, "zone": 10, "infect": 1, "protect": 0.999, "name": "доктора" },
       { "color": "#a0a0a0", "initial": 100, "protect": 0.995, "hidden": true, "allone": true, "name": "джекпот" },
       { "color": "#a050a0", "prob": 0.5, "initial": 1, "zone": 10, "parasite": 1000, "name": "паразиты" }
     ], 
@@ -55,7 +61,7 @@ var obj = JSON.parse(json)
 var states = obj.states, options = obj.options, style = obj.style
 var landscape = obj.landscape ?? { type: [[0]], pow: [[0]], res: 1 };
 var scale = 420/options.size;
-let counter = options.count;
+let counter = { cells: options.count, rats: options.ratcount };
 var started = false, pause = false;
 var music = new Audio();
 music.src = "https://zvukipro.com/uploads/files/2019-11/1572597916_5d8bce8c181a325.mp3"; //music from zvukipro.com
@@ -105,7 +111,6 @@ addEventListener('resize', resize);
 function random(max) {
   return Math.random()*max;
 }
-sort();
 function clear() {
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -122,6 +127,14 @@ function timeNow() {
 function flr(num) {
   num = Math.floor(num*10)/10;
   return num%1 == 0 ? num+".0":num;
+}
+function explosion() {
+  for (let i = 0; i < arr.length; i++) {
+    let p = arr[i];
+    if (p.type == "cell" && p.land.type == 10) {
+      p.dead();
+    }
+  }
 }
 function startrender() {
   clear();
@@ -161,7 +174,7 @@ function sort() {
       let maxi = j;
       for (let i = j; i < sorted.length; i++) {
         let c = sorted[i];
-        if (c.count > max.count) {
+        if (c.count.rats+c.count.cells > max.count.rats+max.count.cells) {
           maxi = i;
           max = c;
         }

@@ -19,19 +19,23 @@
     <div><b class="header">Настройки:</b></div>
     <div id="options">
       <div><label for="count" class="label">Количество клеток:</label>
-      <input type="number" id="count" value="1000" onchange="checknum(this, checksum(window.states.length), 10000, true); window.options.count = this.value; testCount();"><b id="countwarn" class="label" style="color: #a00000;"></b></div>
+      <input type="number" id="count" value="1000" onchange="checknum(this, checksum(window.states.length), 10000, true); window.options.count = Number(this.value); testCount();"><b id="countwarn" class="label" style="color: #a00000;"></b></div>
       <div><label for="speed" class="label">Максимальная скорость:</label>
-      <input type="number" id="speed" value="7" onchange="checknum(this, 1, 10, true); window.options.speed = this.value;"></div>
+      <input type="number" id="speed" value="7" onchange="checknum(this, 1, 10, true); window.options.speed = Number(this.value);"></div>
+      <div><label for="ratcount" class="label">Количество крыс:</label>
+      <input type="number" id="ratcount" value="0" onchange="checknum(this, 0, 1000, true); window.options.ratcount = Number(this.value); testCount();"></div>
+      <div><label for="ratspeed" class="label">Максимальная скорость крыс:</label>
+      <input type="number" id="ratspeed" value="7" onchange="checknum(this, 1, 10, true); window.options.ratspeed = Number(this.value);"></div>
       <div><label for="quar" class="label">Карантин:</label>
-      <input type="number" id="quar" value="0" onchange="checknum(this, 0, 420, true); window.options.quar = this.value;"></div>
+      <input type="number" id="quar" value="0" onchange="checknum(this, 0, 420, true); window.options.quar = Number(this.value);"></div>
       <div><label for="mosquitospeed" class="label">Скорость москита:</label>
-      <input type="number" id="mosquitospeed" value="7" onchange="checknum(this, 1, 10, true); window.options.mosquitospeed = this.value;"></div>
+      <input type="number" id="mosquitospeed" value="7" onchange="checknum(this, 1, 10, true); window.options.mosquitospeed = Number(this.value);"></div>
       <div><label for="mosquitoprob" class="label">Вероятность москита:</label>
-      <input type="number" id="mosquitoprob" value="50" onchange="checknum(this, 0, 100, false); window.options.mosquitoprob = this.value/100; updateStates();"></div>
+      <input type="number" id="mosquitoprob" value="50" onchange="checknum(this, 0, 100, false); window.options.mosquitoprob = Number(this.value)/100; updateStates();"></div>
       <div><label for="mosquitotime" class="label">Время москита:</label>
-      <input type="number" id="mosquitotime" value="3" onchange="checknum(this, 0, 120, false); window.options.mosquitotime = this.value*1000; updateStates();"></div>
+      <input type="number" id="mosquitotime" value="3" onchange="checknum(this, 0, 120, false); window.options.mosquitotime = Number(this.value)*1000; updateStates();"></div>
       <div><label for="mosquitozone" class="label">Зона москита:</label>
-      <input type="number" id="mosquitozone" value="1" onchange="checknum(this, 0, 420, false); window.options.mosquitozone = this.value; updateStates();"></div>
+      <input type="number" id="mosquitozone" value="1" onchange="checknum(this, 0, 420, false); window.options.mosquitozone = Number(this.value); updateStates();"></div>
       <div><label for="landres" class="label">Разрешение ландшафта:</label>
       <input type="number" id="landres" value="7" onchange="checknum(this, 3, 20, true); landResCh();"></div>
       <p class="add" onclick="addopt();">Дополнительно <img src="assets/down.svg" id="addopt_" width="12"></p>
@@ -56,7 +60,7 @@
           <button id="speed_max" onclick="options.showspeed = 1000; $('speedshow').innerHTML='Макс. '" class="speed">макс</button>
         </div>
         <div><label for="healzone" class="label">Зона излечения кликом:</label>
-        <input type="number" id="healzone" value="30" onchange="checknum(this, 0, 420, false); window.options.healzone = this.value;"></div> 
+        <input type="number" id="healzone" value="30" onchange="checknum(this, 0, 420, false); window.options.healzone = Number(this.value);"></div> 
         <div><input type="checkbox" id="music" onchange="window.options.music = this.checked;" checked>
         <label for="music" class="label">Музыка</label></div>
         <div><input type="checkbox" id="turbo" onchange="window.options.turbo = this.checked;">
@@ -68,9 +72,12 @@
       </div>
       <div id="landscapediv">
         <p class="label">Ландшафт:</p>
-        <div id="landscapes">
-          <input type="number" id="landpow" onchange="checknum(this, 0, 100, true);" value="10">
-          <b class="label" id="landsel">без ландшафта</b>
+        <div>
+          <div id="landscapes"></div>
+          <div>
+            <input type="number" id="landpow" onchange="checknum(this, 0, 100, true);" value="10">
+            <b class="label" id="landsel">без ландшафта</b>
+          </div>
         </div>
         <canvas id="landscape" height="450" width="450"></canvas>
       </div>

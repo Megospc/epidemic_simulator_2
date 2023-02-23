@@ -4,7 +4,13 @@ const lands = [
   { color: "#00a0a0", bcolor: "#009090", name: "санитарная зона" },
   { color: "#a000a0", bcolor: "#900090", name: "зона биологической опасности" },
   { color: "#a09000", bcolor: "#908000", name: "пляжная зона" },
-  { color: "#a00000", bcolor: "#900000", name: "зона повышенного заражёния" }
+  { color: "#a00000", bcolor: "#900000", name: "зона повышенного заражёния" },
+  { color: "#605000", bcolor: "#504000", name: "свалочная зона" },
+  { color: "#f0a070", bcolor: "#d09060", name: "аллергенная зона" },
+  { color: "#a00050", bcolor: "#900040", name: "охотнячья зона" },
+  { color: "#0040a0", bcolor: "#003090", name: "морская зона" },
+  { color: "#802000", bcolor: "#701000", name: "взрывоопасная зона" },
+  { color: "#408020", bcolor: "#307010", name: "лагерьная зона" }
 ];
 const props = [
   { title: "Коэффициент скорости:", type: "num", id: "speed", check: [0, 3, false], default: 1, form: "${num}", aform: "${num}" },
@@ -25,9 +31,11 @@ const props = [
   { title: "Количество добавок (0 = бесконечно):", type: "num", id: "countadd", check: [0, 50, true], default: 0, form: "${num}", aform: "${num}" },
   { title: "Шипы(%):", type: "num", id: "spikes", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
   { title: "Анти-ландшафт(%):", type: "num", id: "antiland", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
+  { title: "Аллегрия:", type: "num", id: "allergy", check: [0, 'states.length', true], default: 0, form: "${num}-1", aform: "${num}+1" },
   { title: "Грабитель", type: "chk", id: "robber", default: false },
   { title: "Всё за одного", type: "chk", id: "allone", default: false },
-  { title: "Невидимка", type: "chk", id: "invisible", default: false }
+  { title: "Невидимка", type: "chk", id: "invisible", default: false },
+  { title: "Водобоязнь", type: "chk", id: "waterscary", default: false }
 ];
 var lastnum = 0;
 var states = [];
@@ -48,7 +56,9 @@ var options = {
   healzone: 30,
   showspeed: 1,
   biggraph: false,
-  graphmove: false
+  graphmove: false,
+  ratcount: 0,
+  ratspeed: 7
 };
 var openedadd = [];
 var openedaddopt = false;
@@ -60,6 +70,8 @@ var landsel;
 {
   for (let i = lands.length-1; i >= 0; i--) {
     let p = lands[i];
+    if ((i+1)%8 == 0 && i) $('landscapes').innerHTML = "<div>" + $('landscapes').innerHTML;
+    if ((i+1)%8 == 7) $('landscapes').innerHTML = "</div>" + $('landscapes').innerHTML;
     $('landscapes').innerHTML = `<button class="landscape" style="background-color: ${p.color}; border: 2px solid ${p.bcolor};" onclick="setLand(${i});"></button>` + $('landscapes').innerHTML;
   }
   for (let i = 0; i < landscape.res; i++) {
@@ -88,7 +100,7 @@ $('landscape').addEventListener('click', (e) => {
 });
 function landResCh() {
   if (confirm("При изменении разрешения ландшафт будет сброшен. Изменить? ")) {
-    landscape.res = $('landres').value;
+    landscape.res = Number($('landres').value);
     landscape.type = [];
     landscape.pow = [];
     for (let i = 0; i < landscape.res; i++) {
@@ -158,7 +170,8 @@ function createJSON() {
       resolution: options.resolution,
       mosquitosize: 2,
       biggraph: options.biggraph,
-      graphmove: options.graphmove
+      graphmove: options.graphmove,
+      ratsize: 5
     }
   };
   for (let i = 0; i < states.length; i++) {
@@ -206,13 +219,13 @@ function newState(name, color) {
     <input type="number" id="prob${num}" onchange="updateStates();" value="0"></div>
     <div><label for="zone${num}" class="label">Зона(пкс.):</label>
     <input type="number" id="zone${num}" onchange="updateStates();" value="0"></div>
-    ${num == 0 ? "":`<div><label for="initial${num}" class="label">Начальная попуяция(шт.):</label>
+    ${num == 0 ? "":`<div><label for="zone${num}" class="label">Начальная попуяция(шт.):</label>
     <input type="number" id="initial${num}" onchange="if (this.value != 1) $('pos${num}').checked = false; updateStates();" value="0"></div>`}
     <div><label for="time${num}" class="label">Длина жизни(с) 0 = бесконечно:</label>
     <input type="number" id="time${num}" onchange="updateStates();" value="0"></div>
     <div><label for="protect${num}" class="label">Защита(%):</label>
     <input type="number" id="protect${num}" onchange="updateStates();" value="0"></div>
-    <p style="font-family: Monospcace, sans-serif; font-size: 15px;" onclick="addh(${num});">Дополнительно <img src="assets/down.svg" id="add_${num}" width="12"></p>
+    <p class="add" onclick="addh(${num});">Дополнительно <img src="assets/down.svg" id="add_${num}" width="12"></p>
     <div id="add${num}" style="display: none;">
       ${add}
       ${num == 0 ? "":`<div><input type="checkbox" id="pos${num}" onchange="updateStates();">
@@ -368,100 +381,132 @@ function opengame(file) {
 }
 function readgame(json) {
   let log = (txt) => $('console').value += txt+"\n";
-  log("Файл обрабатывается...")
-  let obj = JSON.parse(json);
+  log("Файл обрабатывается...");
+  let obj = null;
+  try {
+    obj = JSON.parse(json);
+  } catch(e) {
+    log(`Ошибка: ${e.message}`);
+    obj = false;
+  }
   if (typeof obj == "object") {
-    log("JSON прочитан, идёт проверка объекта...")
-    if (obj.states && obj.options && obj.style && obj.name && obj.landscape) {
+    log("JSON прочитан, идёт проверка объекта...");
+    if (obj.states && obj.options && obj.style && obj.name) {
       log("Проверка states...");
       if (states[0] && states.length) {
         log("Проверка options...");
         if (obj.options.count && obj.options.speed) {
           log("Проверка style...");
           if (obj.style.size) {
-            log("Проверка landscape...")
-            if (obj.landscape.type && obj.landscape.pow && obj.landscape.res) {
-              log("Загрузка...");
-              $('states').innerHTML = "";
-              states = [];
-              openedadd = [];
-              lastnum = 0;
-              for (let i = 0; i < obj.states.length; i++) {
-                let st = obj.states[i];
-                if (st.name && st.color) {
-                  newState(st.name, st.color);
-                  $(`hiddenstat${i}`).checked = !(st.hiddenstat ?? false);
-                  $(`hiddengraph${i}`).checked = !(st.hiddengraph ?? false);
-                  $(`transparent${i}`).checked = st.transparent ?? false;
-                  $(`prob${i}`).value = (st.prob ?? 0)*100;
-                  $(`zone${i}`).value = st.zone ?? 0;
-                  if (i != 0) $(`initial${i}`).value = st.initial ?? 0;
-                  $(`protect${i}`).value = (st.protect ?? 0)*100;
-                  $(`time${i}`).value = (st.time ?? 0)/1000;
-                  for (let j = 0; j < props.length; j++) {
-                    let p = props[j];
-                    let num = st[p.id];
-                    if (p.type == "num") $(`${p.id+i}`).value = eval(`eval(\`${p.aform}\`);`);
-                    if (p.type == "chk") $(`${p.id+i}`).checked = p.invert ? !st[p.id]:st[p.id];
-                  }
-                  if (i != 0 && st.position) {
-                    $(`pos${i}`).checked = true;
-                    $(`x${i}`).value = Math.floor(((st.position[0].x ?? 210)-2.5)/2.075)-100;
-                    $(`y${i}`).value = Math.floor(((st.position[0].y ?? 210)-2.5)/2.075)-100;
-                  }
-                  updateState(i);
-                } else {
-                  log(`Ошибка при загрузке: состояние ${i} не содержит обязательные поля`);
-                  setTimeout(() => close(), 500);
-                }
+            log("Проверка landscape...");
+            if (obj.landscape) {
+              if (obj.landscape.type && obj.landscape.pow && obj.landscape.res) {
+                log("landscape существует и содержит обязательные поля.");
+              } else {
+                log("Ошибка: landscape не содержит обязательные поля.");
               }
-              name = obj.name;
-              $('name').value = name;
-              options = {
-                size: 420,
-                count: obj.options.count,
-                speed: obj.options.speed,
-                quar: obj.options.quar ?? 0,
-                stop: false,
-                music: options.music,
-                turbo: options.turbo,
-                resolution: options.resolution,
-                mosquitospeed: obj.options.mosquitospeed ?? 7,
-                mosquitotime: obj.options.mosquitotime ?? 3000,
-                mosquitoprob: obj.options.mosquitoprob ?? 0.5,
-                mosquitozone: obj.options.mosquitozone ?? 1,
-                healzone: obj.options.healzone ?? 30,
-                showspeed: options.showspeed,
-                biggraph: options.biggraph,
-                graphmove: options.graphmove
-              };
-              $('count').value = options.count;
-              $('speed').value = options.speed;
-              $('quar').value = options.quar;
-              $('mosquitospeed').value = options.mosquitospeed;
-              $('mosquitotime').value = options.mosquitotime/1000;
-              $('mosquitoprob').value = options.mosquitoprob*100;
-              $('mosquitozone').value = options.mosquitozone;
-              $('healzone').value = options.healzone;
-              $('music').checked = options.music;
-              $('biggraph').checked = options.biggraph;
-              $('turbo').checked = options.turbo;
-              $('graphmove').checked = options.graphmove;
-              $('speedshow').innerHTML = options.showspeed == 1000 ? "Макс.": `x${options.showspeed} `;
-              $('resshow').innerHTML = options.resolution + "р ";
-              landscape = {
-                type: obj.landscape.type,
-                pow: obj.landscape.pow,
-                res: obj.landscape.res
-              };
-              $('landres').value = landscape.res;
-              landrender();
-              log("Загрузка завершена");
-              updateStates();
-              setTimeout(() => { $('opengame').style.display='none'; $('editor').style.display='block'; }, 500);
             } else {
-              log("Ошибка: landscape не содержит обязательные поля");
+              log("landscape не существует. Замена...");
+              obj.landscape = { type: [
+                [ 0, 0, 0, 0, 0, 0, 0 ],
+                [ 0, 0, 0, 0, 0, 0, 0 ],
+                [ 0, 0, 0, 0, 0, 0, 0 ],
+                [ 0, 0, 0, 0, 0, 0, 0 ],
+                [ 0, 0, 0, 0, 0, 0, 0 ],
+                [ 0, 0, 0, 0, 0, 0, 0 ],
+                [ 0, 0, 0, 0, 0, 0, 0 ]
+              ], pow: [
+                [ 0, 0, 0, 0, 0, 0, 0 ],
+                [ 0, 0, 0, 0, 0, 0, 0 ],
+                [ 0, 0, 0, 0, 0, 0, 0 ],
+                [ 0, 0, 0, 0, 0, 0, 0 ],
+                [ 0, 0, 0, 0, 0, 0, 0 ],
+                [ 0, 0, 0, 0, 0, 0, 0 ],
+                [ 0, 0, 0, 0, 0, 0, 0 ]
+              ], res: 7 };
             }
+            log("Загрузка...");
+            $('states').innerHTML = "";
+            states = [];
+            openedadd = [];
+            lastnum = 0;
+            for (let i = 0; i < obj.states.length; i++) {
+              let st = obj.states[i];
+              if (st.name && st.color) {
+                newState(st.name, st.color);
+                $(`hiddenstat${i}`).checked = !(st.hiddenstat ?? false);
+                $(`hiddengraph${i}`).checked = !(st.hiddengraph ?? false);
+                $(`transparent${i}`).checked = st.transparent ?? false;
+                $(`prob${i}`).value = (st.prob ?? 0)*100;
+                $(`zone${i}`).value = st.zone ?? 0;
+                if (i != 0) $(`initial${i}`).value = st.initial ?? 0;
+                $(`protect${i}`).value = (st.protect ?? 0)*100;
+                $(`time${i}`).value = (st.time ?? 0)/1000;
+                for (let j = 0; j < props.length; j++) {
+                  let p = props[j];
+                  let num = st[p.id];
+                  if (p.type == "num") $(`${p.id+i}`).value = eval(`eval(\`${p.aform}\`);`);
+                  if (p.type == "chk") $(`${p.id+i}`).checked = p.invert ? !st[p.id]:st[p.id];
+                }
+                if (i != 0 && st.position) {
+                  $(`pos${i}`).checked = true;
+                  $(`x${i}`).value = Math.floor(((st.position[0].x ?? 210)-2.5)/2.075)-100;
+                  $(`y${i}`).value = Math.floor(((st.position[0].y ?? 210)-2.5)/2.075)-100;
+                }
+                updateState(i);
+              } else {
+                log(`Ошибка при загрузке: состояние ${i} не содержит обязательные поля`);
+                setTimeout(() => close(), 500);
+              }
+            }
+            name = obj.name;
+            $('name').value = name;
+            options = {
+              size: 420,
+              count: obj.options.count,
+              speed: obj.options.speed,
+              quar: obj.options.quar ?? 0,
+              stop: false,
+              music: options.music,
+              turbo: options.turbo,
+              resolution: options.resolution,
+              mosquitospeed: obj.options.mosquitospeed ?? 7,
+              mosquitotime: obj.options.mosquitotime ?? 3000,
+              mosquitoprob: obj.options.mosquitoprob ?? 0.5,
+              mosquitozone: obj.options.mosquitozone ?? 1,
+              healzone: obj.options.healzone ?? 30,
+              showspeed: options.showspeed,
+              biggraph: options.biggraph,
+              graphmove: options.graphmove,
+              ratcount: obj.options.ratcount ?? 0,
+              ratspeed: obj.options.ratspeed ?? 7
+            };
+            $('count').value = options.count;
+            $('speed').value = options.speed;
+            $('quar').value = options.quar;
+            $('mosquitospeed').value = options.mosquitospeed;
+            $('mosquitotime').value = options.mosquitotime/1000;
+            $('mosquitoprob').value = options.mosquitoprob*100;
+            $('mosquitozone').value = options.mosquitozone;
+            $('healzone').value = options.healzone;
+            $('music').checked = options.music;
+            $('biggraph').checked = options.biggraph;
+            $('turbo').checked = options.turbo;
+            $('graphmove').checked = options.graphmove;
+            $('speedshow').innerHTML = options.showspeed == 1000 ? "Макс.": `x${options.showspeed} `;
+            $('resshow').innerHTML = options.resolution + "р ";
+            $('ratcount').value = options.ratcount;
+            $('ratspeed').value = options.ratspeed;
+            landscape = {
+              type: obj.landscape.type,
+              pow: obj.landscape.pow,
+              res: obj.landscape.res
+            };
+            $('landres').value = landscape.res;
+            landrender();
+            log("Загрузка завершена");
+            updateStates();
+            setTimeout(() => { $('opengame').style.display='none'; $('editor').style.display='block'; }, 500);
           } else {
             log("Ошибка: style не содержит обязательные поля");
           }
@@ -499,8 +544,8 @@ function addopt() {
   }
 }
 function testCount() {
-  if (options.count <= 2000) $('countwarn').innerHTML = "";
-  if (options.count > 2000) $('countwarn').innerHTML = " Не запускайте на слабых устройствах!";
+  if (options.count + options.ratcount <= 2000) $('countwarn').innerHTML = "";
+  if (options.count + options.ratcount > 2000) $('countwarn').innerHTML = " Не запускайте на слабых устройствах!";
 }
 function ahex(a) {
   a = Math.floor(a);
