@@ -10,7 +10,10 @@ const lands = [
   { color: "#a00050", bcolor: "#900040", name: "охотнячья зона" },
   { color: "#0040a0", bcolor: "#003090", name: "морская зона" },
   { color: "#802000", bcolor: "#701000", name: "взрывоопасная зона" },
-  { color: "#408020", bcolor: "#307010", name: "лагерьная зона" }
+  { color: "#408020", bcolor: "#307010", name: "лагерьная зона" },
+  { color: "#000000", bcolor: "#202020", name: "строительная зона" },
+  { color: "#5000a0", bcolor: "#400090", name: "магическая зона" },
+  { color: "#a05000", bcolor: "#a04000", name: "зона строгого конроля" }
 ];
 const props = [
   { title: "Коэффициент скорости:", type: "num", id: "speed", check: [0, 3, false], default: 1, form: "${num}", aform: "${num}" },
@@ -27,15 +30,19 @@ const props = [
   { title: "Зона магнита(пкс.):", type: "num", id: "magnet", check: [0, 420, false], default: 0, form: "${num}", aform: "${num}" },
   { title: "Сила магнита:", type: "num", id: "magnetpow", check: [0, 12, false], default: 0, form: "${num}", aform: "${num}" },
   { title: "Добавка время(с):", type: "num", id: "addtime", check: [0, 120, false], default: 0, form: "${num}*1000", aform: "${num}/1000" },
-  { title: "Добавка количество(шт.):", type: "num", id: "addcount", check: [0, 20, false], default: 0, form: "${num}", aform: "${num}" },
+  { title: "Добавка количество(шт.):", type: "num", id: "addcount", check: [0, 20, true], default: 0, form: "${num}", aform: "${num}" },
   { title: "Количество добавок (0 = бесконечно):", type: "num", id: "countadd", check: [0, 50, true], default: 0, form: "${num}", aform: "${num}" },
   { title: "Шипы(%):", type: "num", id: "spikes", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
   { title: "Анти-ландшафт(%):", type: "num", id: "antiland", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
   { title: "Аллегрия:", type: "num", id: "allergy", check: [0, 'states.length', true], default: 0, form: "${num}-1", aform: "${num}+1" },
+  { title: "Контратака(%):", type: "num", id: "cattack", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
+  { title: "Далняя атака(шт.):", type: "num", id: "farinf", check: [0, 5, true], default: 0, form: "${num}", aform: "${num}" },
+  { title: "Сумасшедший(‰):", type: "num", id: "crazy", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
   { title: "Грабитель", type: "chk", id: "robber", default: false },
   { title: "Всё за одного", type: "chk", id: "allone", default: false },
   { title: "Невидимка", type: "chk", id: "invisible", default: false },
-  { title: "Водобоязнь", type: "chk", id: "waterscary", default: false }
+  { title: "Водобоязнь", type: "chk", id: "waterscary", default: false },
+  { title: "Строитель", type: "chk", id: "builder", default: false }
 ];
 var lastnum = 0;
 var states = [];
@@ -98,6 +105,13 @@ $('landscape').addEventListener('click', (e) => {
     landrender();
   }
 });
+function lssg() {
+  localStorage.setItem("epidemic_simulator_savepoint", createJSON());
+}
+function lsog() {
+  $('console').value = "";
+  readgame(localStorage.getItem("epidemic_simulator_savepoint"));
+}
 function landResCh() {
   if (confirm("При изменении разрешения ландшафт будет сброшен. Изменить? ")) {
     landscape.res = Number($('landres').value);
@@ -189,10 +203,12 @@ function newState(name, color) {
   let add = "";
   for (let i = 0; i < props.length; i++) {
     let p = props[i];
-    if (p.type == "num") add += `<div><label for="${p.id+num}" class="label">${p.title}</label>
-    <input type="number" id="${p.id+num}" onchange="updateStates();" value="${p.default}" ${p.deflaut ? "checked":""}></div>`;
-    if (p.type == "chk") add += `<div><input type="checkbox" id="${p.id+num}" onchange="updateStates();">
-    <label for="${p.id+num}" class="label">${p.title}</label></div>`;
+    if ((p.id != "addcount" && p.id != "addtime" && p.id != "countadd") || num != 0) {
+      if (p.type == "num") add += `<div><label for="${p.id+num}" class="label">${p.title}</label>
+      <input type="number" id="${p.id+num}" onchange="updateStates();" value="${p.default}" ${p.deflaut ? "checked":""}></div>`;
+      if (p.type == "chk") add += `<div><input type="checkbox" id="${p.id+num}" onchange="updateStates();">
+      <label for="${p.id+num}" class="label">${p.title}</label></div>`;
+    }
   }  
   div.innerHTML = `
     <div class="namediv">
@@ -288,18 +304,20 @@ function updateState(n) {
   };
   for (let j = 0; j < props.length; j++) {
     let p = props[j];
-    if (p.type == "num") checknum($(`${p.id+i}`), eval(p.check[0]), eval(p.check[1]), eval(p.check[2]));
-    let num = Number($(`${p.id+i}`).value);
-    if (p.type == "num") obj[p.id] = eval(`eval(\`${p.form}\`);`);
-    if (p.type == "chk") obj[p.id] = $(`${p.id+i}`).checked;
+    if ((p.id != "addcount" && p.id != "addtime" && p.id != "countadd") || n != 0) {
+      if (p.type == "num") checknum($(`${p.id+i}`), eval(p.check[0]), eval(p.check[1]), eval(p.check[2]));
+      let num = Number($(`${p.id+i}`).value);
+      if (p.type == "num") obj[p.id] = eval(`eval(\`${p.form}\`);`);
+      if (p.type == "chk") obj[p.id] = $(`${p.id+i}`).checked;
+    }
   }
   if (n != 0) obj.position = $(`pos${i}`).checked ? [ { x: (Number($(`x${i}`).value)+100)*2.075+2.5, y: (Number($(`y${i}`).value)+100)*2.075+2.5 } ]:null;
   else obj.position = null;
-  obj.points += ((obj.zone**2*obj.prob)+(obj.attacktrans/4)+obj.protect)*((obj.time ? obj.time/1000:(obj.parasite ? 1:240))+(obj.after/500)-(obj.rest/500))/(obj.parasite ? 120/obj.parasite:1)/(obj.allone ? 1000:1)/(obj.infect ? 100:1)*(obj.initial || (obj.addcount && obj.addtime)|| i == 0 ? 1:0);
+  obj.points += (obj.zone**2*(obj.prob+(obj.attacktrans/4)+obj.protect+(obj.spikes/3)+(obj.cattack/4)))*((obj.time ? obj.time/1000:(obj.parasite ? 1:240))+(obj.after/500)-(obj.rest/500))/(obj.parasite ? 120/obj.parasite:1)/(obj.allone ? 1000:1)/(obj.infect ? 100:1)*(obj.initial || (obj.addcount && obj.addtime)|| i == 0 ? 1:0);
   obj.points += obj.protect/100;
   if (obj.robber && options.quar) obj.points += options.size/options.size;
   obj.points += obj.initial+(obj.mosquito*options.mosquitotime*(options.mosquitozone**2)*options.mosquitoprob/1000);
-  if (obj.addtime) obj.points += obj.addcount/obj.addtime*48000;
+  if (obj.addtime && i != 0) obj.points += obj.addcount/obj.addtime*48000;
   obj.points = Math.floor(obj.points);
   $(`points${i}`).innerHTML = obj.points;
   $(`points${i}`).style.color = obj.color;
@@ -445,7 +463,7 @@ function readgame(json) {
                 for (let j = 0; j < props.length; j++) {
                   let p = props[j];
                   let num = st[p.id];
-                  if (p.type == "num") $(`${p.id+i}`).value = eval(`eval(\`${p.aform}\`);`);
+                  if (p.type == "num" && ((p.id != "addcount" && p.id != "addtime" && p.id != "countadd") || i != 0)) $(`${p.id+i}`).value = eval(`eval(\`${p.aform}\`);`);
                   if (p.type == "chk") $(`${p.id+i}`).checked = p.invert ? !st[p.id]:st[p.id];
                 }
                 if (i != 0 && st.position) {

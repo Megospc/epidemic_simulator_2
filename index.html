@@ -10,7 +10,8 @@
 <body id="body">
   <div id="editor">
     <div id="top">
-      <div><input type="text" id="name" value="без имени" onchange="window.name = this.value;"></div>
+      <div><input type="text" id="name" value="без имени" onchange="window.name = this.value;">
+      <button onclick="lssg();" id="lssg"><img src="assets/lssg.svg" height="15"></button></div>
       <button onclick="playgame();" id="play"><img src="assets/play.svg" height="10"> запуск</button>
       <button onclick="downloadgame();" id="save"><img src="assets/download.svg" height="10"> скачать</button>
       <button onclick="window.open('help.html');" id="help"><img src="assets/help.svg" height="10"> помощь</button>
@@ -88,6 +89,7 @@
   </div>
   <div id="opengame" style="display: none;">
     <div><button onclick="$('opengame').style.display='none'; $('editor').style.display='block';" id="back">назад</button></div>
+    <div><button onclick="lsog();" id="lsog">загрузить точку восстановления</button></div>
     <div><input type="file" id="file" onchange="opengame(this.files[0]);"></div>
     <div><textarea id="console" readonly></textarea></div>
   </div>
