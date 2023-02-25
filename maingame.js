@@ -110,7 +110,7 @@ class Cell {
       if (this.land.type == 1 && this.land.pow > Math.random()) this.dead();
       if (this.land.type == 12 && this.land.pow/(this.st.builder ? 100:1) > Math.random()) this.dead();
       if (this.state && this.land.type == 2 && this.land.pow > Math.random()) this.toState(0);
-      if (this.state && this.land.type == 7 && this.land.pow > Math.random() && this.st.allergy != -1) this.toState(this.st.allergy);
+      if (this.land.type == 7 && this.land.pow > Math.random() && this.st.allergy != -1) this.toState(this.st.allergy);
       if (this.alive && this.land.type == 13 && this.land.pow > Math.random()) { this.dead(); arr[this.id] = new Rat(this.id, this.x, this.y, this.state); }
       if (this.state && this.land.type == 9 && this.land.pow > Math.random() && this.st.waterscary) this.dead();
       if (this.land.type == 10 && this.land.pow/1000 > Math.random()) explosion();
@@ -122,8 +122,8 @@ class Cell {
     }
     if ((!this.alive) && this.infectable && this.st.after+this.time < timeNow()) {
       this.infectable = false;
-      this.st.count--;
-      counter--;
+      this.st.count.cells--;
+      counter.cells--;
     } 
     if ((this.infectable || (this.st.magnet && this.st.magnetpow && this.alive) || (this.st.parasite && this.alive)) && this.frame !== frame_) {
       let inzone = 0;

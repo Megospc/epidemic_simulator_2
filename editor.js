@@ -7,7 +7,7 @@ const lands = [
   { color: "#a00000", bcolor: "#900000", name: "зона повышенного заражёния" },
   { color: "#605000", bcolor: "#504000", name: "свалочная зона" },
   { color: "#f0a070", bcolor: "#d09060", name: "аллергенная зона" },
-  { color: "#a00050", bcolor: "#900040", name: "охотнячья зона" },
+  { color: "#a00050", bcolor: "#900040", name: "охотнечья зона" },
   { color: "#0040a0", bcolor: "#003090", name: "морская зона" },
   { color: "#802000", bcolor: "#701000", name: "взрывоопасная зона" },
   { color: "#408020", bcolor: "#307010", name: "лагерьная зона" },
@@ -36,10 +36,10 @@ const props = [
   { title: "Анти-ландшафт(%):", type: "num", id: "antiland", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
   { title: "Аллегрия:", type: "num", id: "allergy", check: [0, 'states.length', true], default: 0, form: "${num}-1", aform: "${num}+1" },
   { title: "Контратака(%):", type: "num", id: "cattack", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
-  { title: "Далняя атака(шт.):", type: "num", id: "farinf", check: [0, 5, true], default: 0, form: "${num}", aform: "${num}" },
+  { title: "Дальняя атака(шт.):", type: "num", id: "farinf", check: [0, 5, true], default: 0, form: "${num}", aform: "${num}" },
   { title: "Сумасшедший(‰):", type: "num", id: "crazy", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
   { title: "Грабитель", type: "chk", id: "robber", default: false },
-  { title: "Всё за одного", type: "chk", id: "allone", default: false },
+  { title: "Все за одного", type: "chk", id: "allone", default: false },
   { title: "Невидимка", type: "chk", id: "invisible", default: false },
   { title: "Водобоязнь", type: "chk", id: "waterscary", default: false },
   { title: "Строитель", type: "chk", id: "builder", default: false }
@@ -411,7 +411,7 @@ function readgame(json) {
     log("JSON прочитан, идёт проверка объекта...");
     if (obj.states && obj.options && obj.style && obj.name) {
       log("Проверка states...");
-      if (states[0] && states.length) {
+      if (obj.states[0] && obj.states.length) {
         log("Проверка options...");
         if (obj.options.count && obj.options.speed) {
           log("Проверка style...");
@@ -450,32 +450,27 @@ function readgame(json) {
             lastnum = 0;
             for (let i = 0; i < obj.states.length; i++) {
               let st = obj.states[i];
-              if (st.name && st.color) {
-                newState(st.name, st.color);
-                $(`hiddenstat${i}`).checked = !(st.hiddenstat ?? false);
-                $(`hiddengraph${i}`).checked = !(st.hiddengraph ?? false);
-                $(`transparent${i}`).checked = st.transparent ?? false;
-                $(`prob${i}`).value = (st.prob ?? 0)*100;
-                $(`zone${i}`).value = st.zone ?? 0;
-                if (i != 0) $(`initial${i}`).value = st.initial ?? 0;
-                $(`protect${i}`).value = (st.protect ?? 0)*100;
-                $(`time${i}`).value = (st.time ?? 0)/1000;
-                for (let j = 0; j < props.length; j++) {
-                  let p = props[j];
-                  let num = st[p.id];
-                  if (p.type == "num" && ((p.id != "addcount" && p.id != "addtime" && p.id != "countadd") || i != 0)) $(`${p.id+i}`).value = eval(`eval(\`${p.aform}\`);`);
-                  if (p.type == "chk") $(`${p.id+i}`).checked = p.invert ? !st[p.id]:st[p.id];
-                }
-                if (i != 0 && st.position) {
-                  $(`pos${i}`).checked = true;
-                  $(`x${i}`).value = Math.floor(((st.position[0].x ?? 210)-2.5)/2.075)-100;
-                  $(`y${i}`).value = Math.floor(((st.position[0].y ?? 210)-2.5)/2.075)-100;
-                }
-                updateState(i);
-              } else {
-                log(`Ошибка при загрузке: состояние ${i} не содержит обязательные поля`);
-                setTimeout(() => close(), 500);
+              newState(st.name ?? "без имени", st.color ?? "#000000");
+              $(`hiddenstat${i}`).checked = !(st.hiddenstat ?? false);
+              $(`hiddengraph${i}`).checked = !(st.hiddengraph ?? false);
+              $(`transparent${i}`).checked = st.transparent ?? false;
+              $(`prob${i}`).value = (st.prob ?? 0)*100;
+              $(`zone${i}`).value = st.zone ?? 0;
+              if (i != 0) $(`initial${i}`).value = st.initial ?? 0;
+              $(`protect${i}`).value = (st.protect ?? 0)*100;
+              $(`time${i}`).value = (st.time ?? 0)/1000;
+              for (let j = 0; j < props.length; j++) {
+                let p = props[j];
+                let num = st[p.id];
+                if (p.type == "num" && ((p.id != "addcount" && p.id != "addtime" && p.id != "countadd") || i != 0)) $(`${p.id+i}`).value = eval(`eval(\`${p.aform}\`);`);
+                if (p.type == "chk") $(`${p.id+i}`).checked = p.invert ? !st[p.id]:st[p.id];
               }
+              if (i != 0 && st.position) {
+                $(`pos${i}`).checked = true;
+                $(`x${i}`).value = Math.floor(((st.position[0].x ?? 210)-2.5)/2.075)-100;
+                $(`y${i}`).value = Math.floor(((st.position[0].y ?? 210)-2.5)/2.075)-100;
+              }
+              updateState(i);
             }
             name = obj.name;
             $('name').value = name;
