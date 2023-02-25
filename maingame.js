@@ -1,7 +1,7 @@
 class Cell {
   constructor(id, x, y, state) {
-    this.x = x ?? random(options.size);
-    this.y = y ?? random(options.size);
+    this.x = testCordMinMax(x ?? random(options.size), style.size);
+    this.y = testCordMinMax(y ?? random(options.size), style.size);
     this.speed = { x: random(options.speed)-(options.speed/2), y: random(options.speed)-(options.speed/2) };
     this.state = 0;
     this.id = id;
@@ -130,7 +130,7 @@ class Cell {
       for (let i = 0; i < arr.length; i++) {
         let p = arr[i];
         if (p.state != this.infect && p.state != this.state && p.alive) {
-          if (p.state == "cell" && p.x >= this.x-this.st.magnet && p.x <= this.x+this.st.magnet && p.y >= this.y-this.st.magnet && p.y <= this.y+this.st.magnet) {
+          if (p.type == "cell" && p.x >= this.x-this.st.magnet && p.x <= this.x+this.st.magnet && p.y >= this.y-this.st.magnet && p.y <= this.y+this.st.magnet) {
             let c = (this.st.magnet-Math.sqrt(((this.x-p.x)**2)+((this.y-p.y)**2)))/this.st.magnet;
             p.magnet = {};
             p.magnet.y = p.y < this.y ? this.st.magnetpow*c:-this.st.magnetpow*c;
