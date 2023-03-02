@@ -138,7 +138,7 @@ class Cell {
           }
           if (((this.land.type == 3 && this.land.pow > Math.random() && p.land.type == 3 && p.type == "cell") || (this.x-this.st.zone <= p.x && this.x+this.st.zone >= p.x && this.y-this.st.zone <= p.y && this.y+this.st.zone >= p.y)) && ! (this.land.type == 14 && this.land.pow > Math.random() && p.land.type == 14 && p.type == "cell")) {
             inzone++;
-            if (Math.random() < this.st.prob+(this.land.type == 5 ? this.land.pow:0) && (p.st.protect ?? 0)-(this.st.spikes ?? 0) < Math.random()) {
+            if (Math.random() < this.st.prob*(this.land.type == 5 ? this.land.pow+1:1) && (p.st.protect ?? 0)-(this.st.spikes ?? 0) < Math.random()) {
               if (Math.random() < this.st.killer) {
                 p.dead();
               } else {
@@ -515,7 +515,7 @@ function frame() {
       ctx.font = `${X(18)}px Monospace`;
       ctx.fillStyle = "#000000";
       ctx.fillText(`Время: ${flr(timeNow()/1000)}с`, X(490), Y(style.biggraph ? 260:30));
-      ctx.fillText(`FPS: ${flr(FPS)+ (options.showspeed == 1000 ? " ⚡":` x${options.showspeed ?? 1}`)}`, X(490), Y(style.biggraph ? 290:60));
+      ctx.fillText(`FPS: ${flr(FPS) + " x" + (options.showspeed ?? 1)}`, X(490), Y(style.biggraph ? 290:60));
       if (!style.biggraph) ctx.fillText("Статистика:", X(490), Y(120));
       ctx.fillText(`${counter.cells+counter.rats}${counter.rats > 0 ? ` (${counter.cells})`:""} | сумма`, X(490), Y(style.biggraph ? 350:150));
       sort();

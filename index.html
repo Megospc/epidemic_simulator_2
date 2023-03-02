@@ -51,14 +51,14 @@
         </div>
         <div id="speed">
           <p class="label">Скорость показа: </p>
-          <p class="label" id="speedshow">x1 </p>
-          <button id="speed_0.1" onclick="options.showspeed = 0.1; $('speedshow').innerHTML='x0.1 '" class="speed">x0.1</button>
-          <button id="speed_0.2" onclick="options.showspeed = 0.2; $('speedshow').innerHTML='x0.2 '" class="speed">x0.2</button>
-          <button id="speed_0.5" onclick="options.showspeed = 0.5; $('speedshow').innerHTML='x0.5 '" class="speed">x0.5</button>
-          <button id="speed_1" onclick="options.showspeed = 1; $('speedshow').innerHTML='x1 '" class="speed">x1</button>
-          <button id="speed_2" onclick="options.showspeed = 2; $('speedshow').innerHTML='x2 '" class="speed">x2</button>
-          <button id="speed_5" onclick="options.showspeed = 5; $('speedshow').innerHTML='x5 '" class="speed">x5</button>
-          <button id="speed_max" onclick="options.showspeed = 1000; $('speedshow').innerHTML='Макс. '" class="speed">макс</button>
+          <p class="label">x</p>
+          <input type="number" style="width: 40px;" onchange="checknum(this, 0.01, 10, false); window.options.showspeed = Number(this.value);" id="speedshow" value="1">
+          <button id="speed_0.1" onclick="window.options.showspeed = 0.1; $('speedshow').value = 0.1;" class="speed">x0.1</button>
+          <button id="speed_0.2" onclick="window.options.showspeed = 0.2; $('speedshow').value = 0.2;" class="speed">x0.2</button>
+          <button id="speed_0.5" onclick="window.options.showspeed = 0.5; $('speedshow').value = 0.5;" class="speed">x0.5</button>
+          <button id="speed_1" onclick="window.options.showspeed = 1; $('speedshow').value = 1;" class="speed">x1</button>
+          <button id="speed_2" onclick="window.options.showspeed = 2; $('speedshow').value = 2;" class="speed">x2</button>
+          <button id="speed_5" onclick="window.options.showspeed = 5; $('speedshow').value = 5;" class="speed">x5</button>
         </div>
         <div><label for="healzone" class="label">Зона излечения кликом:</label>
         <input type="number" id="healzone" value="30" onchange="checknum(this, 0, 420, false); window.options.healzone = Number(this.value);"></div> 

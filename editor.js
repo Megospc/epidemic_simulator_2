@@ -7,7 +7,7 @@ const lands = [
   { color: "#a00000", bcolor: "#900000", name: "зона повышенного заражёния" },
   { color: "#605000", bcolor: "#504000", name: "свалочная зона" },
   { color: "#f0a070", bcolor: "#d09060", name: "аллергенная зона" },
-  { color: "#a00050", bcolor: "#900040", name: "охотнечья зона" },
+  { color: "#a00050", bcolor: "#900040", name: "охотничья зона" },
   { color: "#0040a0", bcolor: "#003090", name: "морская зона" },
   { color: "#802000", bcolor: "#701000", name: "взрывоопасная зона" },
   { color: "#408020", bcolor: "#307010", name: "лагерьная зона" },
@@ -375,7 +375,7 @@ function copystate(i) {
   for (let j = 0; j < props.length; j++) {
     let p = props[j];
     let num = cs[p.id];
-    if (p.type == "num") $(`${p.id+i}`).value = num ? eval(`eval(\`${p.aform}\`);`):p.default;
+    if (p.type == "num") $(`${p.id+i}`).value = eval(`eval(\`${p.aform}\`);`);
     if (p.type == "chk") $(`${p.id+i}`).checked = p.invert ? !cs[p.id]:cs[p.id];
   }
   if (cs.position) {
