@@ -591,6 +591,7 @@ function frame() {
       ctx.font = `${X(18)}px Monospace`;
       ctx.fillText(`Расчёт: ${Math.floor(performance.now()-start)}мс`, X(490), Y(style.biggraph ? 320:90));
     }
+    maxFPS = 1000/(performance.now()-start);
   } else {
     clearInterval(interval);
   }

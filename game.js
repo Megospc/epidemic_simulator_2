@@ -19,7 +19,7 @@ const lands = [
 var json;
 {
   let url = new URL(location.href);
-  json = (url.searchParams.get('open') ? localStorage.getItem('epidemic_simulator_json'):null)?? `{
+  json = (url.searchParams.get('open') ? localStorage.getItem('epidemic_simulator_json'):null) ?? `{
     "name": "epidemic_simulator",
     "resolution": 1080,
     "states": [
@@ -66,9 +66,8 @@ var landscape = obj.landscape ?? { type: [[0]], pow: [[0]], res: 1 };
 var scale = 420/options.size;
 let counter = { cells: options.count, rats: options.ratcount };
 var started = false, pause = false;
-var music = new Audio();
-music.src = "https://zvukipro.com/uploads/files/2019-11/1572597916_5d8bce8c181a325.mp3"; //music from zvukipro.com
-const fpsTime = 1000/fps/(options.showspeed ?? 1);
+var music = new Audio("assets/music.mp3"); //music from zvukipro.com
+var goalFPS = fps*(options.showspeed ?? 1), fpsTime = 1000/goalFPS, maxFPS = fps;
 function resize() {
   w = window.innerWidth;
   h = window.innerHeight;
@@ -125,7 +124,7 @@ function Y(y) {
   return Math.floor(y*cc);
 }
 function timeNow() {
-  return frame_/30*1000;
+  return frame_/fps*1000;
 }
 function flr(num) {
   num = Math.floor(num*10)/10;
@@ -142,11 +141,32 @@ function explosion() {
 function startrender() {
   clear();
   ctx.fillStyle = "#a00000a0";
-  ctx.font = `${X(42)}px Monospace`;
-  ctx.fillText("Кликните чтобы продолжить", X(120), Y(200));
+  ctx.font = `${X(21)}px Monospace`;
+  ctx.fillText("Кликните чтобы продолжить", X(300), Y(350));
   ctx.fillStyle = "#0000a0a0";
   ctx.font = `${X(36)}px Monospace`;
-  ctx.fillText("Симулятор Эпидемий", X(230), Y(100));
+  ctx.fillText("Симулятор Эпидемии", X(250), Y(100));
+   ctx.fillStyle = "#a00050a0";
+  ctx.font = `${X(15)}px Monospace`;
+  ctx.fillText("Загрузка завершена...", X(360), Y(400));
+  ctx.fillStyle = "#a0205050";
+  ctx.fillRect(X(400), Y(170), X(100), Y(100));
+  ctx.fillRect(X(420), Y(150), X(10), Y(20));
+  ctx.fillRect(X(445), Y(150), X(10), Y(20));
+  ctx.fillRect(X(470), Y(150), X(10), Y(20));
+  ctx.fillRect(X(420), Y(270), X(10), Y(20));
+  ctx.fillRect(X(445), Y(270), X(10), Y(20));
+  ctx.fillRect(X(470), Y(270), X(10), Y(20));
+  ctx.fillRect(X(380), Y(190), X(20), Y(10));
+  ctx.fillRect(X(380), Y(215), X(20), Y(10));
+  ctx.fillRect(X(380), Y(240), X(20), Y(10));
+  ctx.fillRect(X(500), Y(190), X(20), Y(10));
+  ctx.fillRect(X(500), Y(215), X(20), Y(10));
+  ctx.fillRect(X(500), Y(240), X(20), Y(10));
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(X(420), Y(190), X(60), Y(60));
+  ctx.fillStyle = "#a0205050";
+  ctx.fillRect(X(445), Y(200), X(25), Y(25));
 }
 startrender();
 addEventListener('click', () => {

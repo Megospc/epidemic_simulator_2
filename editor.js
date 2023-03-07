@@ -118,10 +118,8 @@ function landResCh() {
     landscape.type = [];
     landscape.pow = [];
     for (let i = 0; i < landscape.res; i++) {
-      landscape.type[i] = new Array();
-      for (let j = 0; j < landscape.res; j++) landscape.type[i].push(0);
-      landscape.pow[i] = new Array();
-      for (let j = 0; j < landscape.res; j++) landscape.pow[i].push(0);
+      landscape.type[i] = new Array(landscape.res).fill(0);
+      landscape.pow[i] = new Array(landscape.res).fill(0);
     }
     landrender();
   } else {
@@ -152,15 +150,15 @@ function landrender() {
 }
 function downloadgame() {
   let blob = new Blob([createJSON()], { type: "application/json" });
-  let lnk = URL.createObjectURL(blob);
+  let link = URL.createObjectURL(blob);
   let a = document.createElement('a');
-  a.href = lnk;
+  a.href = link;
   a.download = `${name}.json`;
   a.click();
 }
 function playgame() {
   localStorage.setItem('epidemic_simulator_json', createJSON());
-  open('game.html?open=true');
+  open('game.html?open=1');
 }
 function createJSON() {
   let opts = Object.assign({}, options);
@@ -558,7 +556,7 @@ function addopt() {
 }
 function testCount() {
   if (options.count + options.ratcount <= 2000) $('countwarn').innerHTML = "";
-  if (options.count + options.ratcount > 2000) $('countwarn').innerHTML = " Не запускайте на слабых устройствах!";
+  else $('countwarn').innerHTML = " Не запускайте на слабых устройствах!";
 }
 function ahex(a) {
   a = Math.floor(a);
