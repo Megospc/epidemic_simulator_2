@@ -169,13 +169,6 @@ function startrender() {
   ctx.fillRect(X(445), Y(200), X(25), Y(25));
 }
 startrender();
-addEventListener('click', () => {
-  music.loop = true;
-  if (options.music) music.play();
-  interval = setInterval(() => { if (performance.now() >= lastTime+fpsTime) frame(); }, 1);
-  started = true;
-  document.addEventListener('click', click);
-}, { once: true });
 function fullScreen(e) {
   if(e.requestFullscreen) {
     e.requestFullscreen();

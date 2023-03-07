@@ -649,3 +649,10 @@ function start() {
   sort();
 }
 start();
+addEventListener('click', () => {
+  music.loop = true;
+  if (options.music) music.play();
+  interval = setInterval(() => { if (performance.now() >= lastTime+fpsTime) frame(); }, 1);
+  started = true;
+  document.addEventListener('click', click);
+}, { once: true });
