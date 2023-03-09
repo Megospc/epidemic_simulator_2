@@ -129,7 +129,7 @@ class Cell {
       let inzone = 0;
       for (let i = 0; i < arr.length; i++) {
         let p = arr[i];
-        if (p.state != this.infect && p.state != this.state && p.alive) {
+        if (p.state != this.infect && p.state != this.state && p.alive && (!this.st.group || this.st.group != p.st.group)) {
           if (p.type == "cell" && p.x >= this.x-this.st.magnet && p.x <= this.x+this.st.magnet && p.y >= this.y-this.st.magnet && p.y <= this.y+this.st.magnet) {
             let c = (this.st.magnet-Math.sqrt(((this.x-p.x)**2)+((this.y-p.y)**2)))/this.st.magnet;
             p.magnet = {};
@@ -460,6 +460,7 @@ function frame() {
       for (let i = 0; i < states.length; i++) {
         counts_[i] = states[i].count.cells+states[i].count.rats;
       }
+      counts.sum = counter.cells+counter.rats;
       counts.push(counts_);
     }
     clear();
@@ -580,16 +581,27 @@ function frame() {
       ctx.lineTo(X(790), Y(420));
       ctx.closePath();
       ctx.fill();
-      ctx.fillRect(X(770), Y(410), X(10), Y(10))
+      ctx.fillRect(X(770), Y(410), X(10), Y(10));
+      for (let i = 0; i < 4; i++) ctx.fillRect(X(725), Y(400+(i*5)), X(25), Y(2));
+      for (let i = 0; i < 2; i++) ctx.fillRect(X(730), Y(420+(i*5)), X(20), Y(2));
+      ctx.strokeStyle = "#d0d0d0";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(X(720), Y(420));
+      ctx.lineTo(X(725), Y(425));
+      ctx.lineTo(X(720), Y(430));
+      ctx.stroke();
     } else {
       ctx.fillRect(X(850), Y(400), X(10), Y(30));
       ctx.fillRect(X(870), Y(400), X(10), Y(30));
       frame_++;
     }
+    let perf = performance.now()-start;
+    if (!pause) stats.push({ perf: perf, sum: counter.cells+counter.rats });
     if (!style.onlygame) {
       ctx.fillStyle = "#000000";
       ctx.font = `${X(18)}px Monospace`;
-      ctx.fillText(`Расчёт: ${Math.floor(performance.now()-start)}мс`, X(490), Y(style.biggraph ? 320:90));
+      ctx.fillText(`Расчёт: ${Math.floor(perf)}мс`, X(490), Y(style.biggraph ? 320:90));
     }
     maxFPS = 1000/(performance.now()-start);
   } else {
@@ -610,6 +622,31 @@ function click(e) {
   if (pause && x > 760 && x < 790 && y > 400) {
     fullScreen(document.documentElement);
   }
+  if (pause && x > 720 && x < 750 && y > 400) {
+    let fast = { num: 1000/fps };
+    let slow = { num: 1000/fps };
+    let frames = "";
+    for (let j = 0; j < frame_; j++) {
+      frames += `\nFRAME ${j} (${flr(j/fps)}s)\n${stats[j].sum} | сумма\n`;
+      for (let i = 0; i < counts[j].length; i++) {
+        frames += `${counts[j][i]} | ${states[i].name}\n`;
+      }
+      frames += `done in ${flr(stats[j].perf)}ms (maxFPS: ${flr(1000/stats[j].perf)})\n`;
+      if (stats[j].perf > slow.num) slow = { num: stats[j].perf, frame: j };
+      if (stats[j].perf < fast.num) fast = { num: stats[j].perf, frame: j };
+    }
+    let logs = `EPIDEMIC_SIMULATOR_2_LOGS:
+version = ${version}
+name    = ${obj.name}
+json    = ${json}
+date    = ${date}
+frames  = ${frame_} (${flr(frame_/fps)}s)
+fastest = ${flr(fast.num)}ms (frame: ${fast.frame})
+slowest = ${flr(slow.num)}ms (frame: ${slow.frame})
+${frames}`;
+    sessionStorage.setItem("epidemic_simulator_logs", logs);
+    open('logs.html');
+  }
   if (!pause && options.healzone && y >= 15 && y <= 435 && x >= 15 && x <= 435) {
     let x_ = (x-15)/420*options.size;
     let y_ = (y-15)/420*options.size;
@@ -623,9 +660,12 @@ function click(e) {
   }
 }
 function start() {
+  let rats = 0;
+  let cells = 0;
   arr = [];
   counts = [];
   mosq = [];
+  perfs = [];
   frame_ = 0;
   counter = { cells: 0, rats: 0 };
   states[0].count = { cells: 0, rats: 0 };
@@ -638,18 +678,24 @@ function start() {
       let x = null, y = null;
       if (ill.position && ill.position.length > k) x = ill.position[k].x, y = ill.position[k].y;
       arr.push(new Cell(j, x, y, i));
+      cells++;
+    }
+    for (let k = 0; k < ill.ratinit; k++, j++) {
+      arr.push(new Rat(j, null, null, i));
+      rats++;
     }
   }
-  for (let i = arr.length; i < options.count; i++) {
+  for (let i = arr.length; cells < options.count; i++, cells++) {
     arr.push(new Cell(i));
   }
-  for (let i = arr.length, l = 0; l < options.ratcount; i++, l++) {
+  for (let i = arr.length; rats < options.ratcount; i++, rats++) {
     arr.push(new Rat(i));
   }
   sort();
 }
 start();
 addEventListener('click', () => {
+  date = Date.now();
   music.loop = true;
   if (options.music) music.play();
   interval = setInterval(() => { if (performance.now() >= lastTime+fpsTime) frame(); }, 1);

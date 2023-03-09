@@ -20,7 +20,7 @@ const lands = [
 var json;
 {
   let url = new URL(location.href);
-  json = (url.searchParams.get('open') ? localStorage.getItem('epidemic_simulator_json'):null) ?? `{
+  json = (url.searchParams.get('open') ? sessionStorage.getItem('epidemic_simulator_json'):null) ?? `{
     "name": "epidemic_simulator",
     "states": [
       { "color": "#00a000", "name": "здоровые", "hiddengraph": true }, 
@@ -58,8 +58,8 @@ var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 var graph_ = document.getElementById('graph');
 var grp = graph_.getContext('2d');
-var arr = [], counts = [], mosq = [], sorted = [];
-var lastTime = 0, frame_ = 0;
+var arr = [], counts = [], mosq = [], sorted = [], stats = [];
+var lastTime = 0, frame_ = 0, date = 0;
 var obj = JSON.parse(json);
 var states = obj.states, options = obj.options, style = obj.style
 var landscape = obj.landscape ?? { type: [[0]], pow: [[0]], res: 1 };
@@ -68,6 +68,7 @@ var counter = { cells: options.count, rats: options.ratcount };
 var started = false, pause = false;
 var music = new Audio("assets/music.mp3"); //music from zvukipro.com
 var goalFPS = fps*(options.showspeed ?? 1), fpsTime = 1000/goalFPS, maxFPS = fps;
+stats.push({ perf: performance.now(), sum: options.count });
 function resize() {
   w = window.innerWidth;
   h = window.innerHeight;

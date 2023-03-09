@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600px, user-scalable=yes">
+  <title>Симулятор эпидемии - просмотр логов</title>
+  <link rel="icon" href="assets/icon.svg">
+</head>
+<body>
+  <header style="margin-bottom: 10px;">
+    <b style="font-family: Monospace, sans-serif; font-size: 24px;">Просмотр логов</b>
+  </header>
+  <div style="margin-bottom: 10px;">
+    <button onclick="download();" style="font-family: sans-serif, Monospace;">скачать</button>
+  </div>
+  <textarea id="logs" style="font-family: Monaco, sans-serif; font-size: 12px; width: 500px; height: 250px; resize: none;" readonly></textarea>
+</body>
+</html>
+<script>
+  var logs = sessionStorage.getItem('epidemic_simulator_logs');
+  if (!logs) close();
+  document.getElementById('logs').value = logs;
+  function download() {
+    let blob = new Blob([logs], { type: "text/plain" });
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `epidemic_simulator_logs.txt`;
+    a.click();
+  }
+</script>

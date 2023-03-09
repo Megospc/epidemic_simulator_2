@@ -7,7 +7,7 @@ function download() {
   a.click();
 }
 function play() {
-  localStorage.setItem('epidemic_simulator_json', get());
+  sessionStorage.setItem('epidemic_simulator_json', get());
   open('game.html?open=1');
 }
 function opengame(file) {

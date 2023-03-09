@@ -24,13 +24,13 @@
       <div><label for="speed" class="label">Максимальная скорость:</label>
       <input type="number" id="speed" value="7" onchange="checknum(this, 1, 10, true); window.options.speed = Number(this.value);"></div>
       <div><label for="size" class="label">Размер поля:</label>
-      <input type="number" id="size" value="420" onchange="checknum(this, 300, 1000, true); window.options.size = Number(this.value);"></div>
+      <input type="number" id="size" value="420" onchange="checknum(this, 300, 1000, true); window.options.size = Number(this.value); updateStates();"></div>
       <div><label for="ratcount" class="label">Количество крыс:</label>
       <input type="number" id="ratcount" value="0" onchange="checknum(this, 0, 1000, true); window.options.ratcount = Number(this.value); testCount();"></div>
       <div><label for="ratspeed" class="label">Максимальная скорость крыс:</label>
       <input type="number" id="ratspeed" value="7" onchange="checknum(this, 1, 10, true); window.options.ratspeed = Number(this.value);"></div>
       <div><label for="quar" class="label">Карантин:</label>
-      <input type="number" id="quar" value="0" onchange="checknum(this, 0, 420, true); window.options.quar = Number(this.value);"></div>
+      <input type="number" id="quar" value="0" onchange="checknum(this, 0, options.size, true); window.options.quar = Number(this.value);"></div>
       <div><label for="mosquitospeed" class="label">Скорость москита:</label>
       <input type="number" id="mosquitospeed" value="7" onchange="checknum(this, 1, 10, true); window.options.mosquitospeed = Number(this.value);"></div>
       <div><label for="mosquitoprob" class="label">Вероятность москита:</label>
