@@ -65,7 +65,8 @@ var options = {
   biggraph: false,
   graphmove: false,
   ratcount: 0,
-  ratspeed: 7
+  ratspeed: 7,
+  healto: 0
 };
 var openedadd = [];
 var openedaddopt = false;
@@ -309,7 +310,7 @@ function updateState(n) {
       if (p.type == "chk") obj[p.id] = $(`${p.id+i}`).checked;
     }
   }
-  if (n != 0) obj.position = $(`pos${i}`).checked ? [ { x: (Number($(`x${i}`).value)+100)*2.075+2.5, y: (Number($(`y${i}`).value)+100)*2.075+2.5 } ]:null;
+  if (n != 0) obj.position = $(`pos${i}`).checked ? [ { x: (Number($(`x${i}`).value)+100)*((options.size-5)/200)+2.5, y: (Number($(`y${i}`).value)+100)*((options.size-5)/200)+2.5 } ]:null;
   else obj.position = null;
   obj.points += (obj.zone**2*(obj.prob+(obj.attacktrans/4)+obj.protect+(obj.spikes/3)+(obj.cattack/4)))*((obj.time ? obj.time/1000:(obj.parasite ? 1:240))+(obj.after/500)-(obj.rest/500))/(obj.parasite ? 120/obj.parasite:1)/(obj.allone ? 1000:1)/(obj.infect ? 100:1)*(obj.initial || (obj.addcount && obj.addtime)|| i == 0 ? 1:0);
   obj.points += obj.protect/100;
@@ -378,8 +379,8 @@ function copystate(i) {
   }
   if (cs.position) {
     $(`pos${i}`).checked = true;
-    $(`x${i}`).value = Math.floor(((cs.position[0].x ?? 210)-2.5)/2.075)-100;
-    $(`y${i}`).value = Math.floor(((cs.position[0].y ?? 210)-2.5)/2.075)-100;
+    $(`x${i}`).value = Math.floor(((cs.position[0].x ?? 210)-2.5)/((options.size-5)/200))-100;
+    $(`y${i}`).value = Math.floor(((cs.position[0].y ?? 210)-2.5)/((options.size-5)/200))-100;
   }
   updateStates();
 }
@@ -465,15 +466,15 @@ function readgame(json) {
               }
               if (i != 0 && st.position) {
                 $(`pos${i}`).checked = true;
-                $(`x${i}`).value = Math.floor(((st.position[0].x ?? 210)-2.5)/2.075)-100;
-                $(`y${i}`).value = Math.floor(((st.position[0].y ?? 210)-2.5)/2.075)-100;
+                $(`x${i}`).value = Math.floor(((st.position[0].x ?? 210)-2.5)/((options.size-5)/200))-100;
+                $(`y${i}`).value = Math.floor(((st.position[0].y ?? 210)-2.5)/((options.size-5)/200))-100;
               }
               updateState(i);
             }
             name = obj.name;
             $('name').value = name;
             options = {
-              size: 420,
+              size: obj.options.size,
               count: obj.options.count,
               speed: obj.options.speed,
               quar: obj.options.quar ?? 0,
@@ -486,12 +487,14 @@ function readgame(json) {
               mosquitoprob: obj.options.mosquitoprob ?? 0.5,
               mosquitozone: obj.options.mosquitozone ?? 1,
               healzone: obj.options.healzone ?? 30,
+              healto: obj.options.healto ?? 0,
               showspeed: options.showspeed,
               biggraph: options.biggraph,
               graphmove: options.graphmove,
               ratcount: obj.options.ratcount ?? 0,
               ratspeed: obj.options.ratspeed ?? 7
             };
+            $('size').value = options.size;
             $('count').value = options.count;
             $('speed').value = options.speed;
             $('quar').value = options.quar;

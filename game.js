@@ -1,3 +1,4 @@
+const version = "2.5.8";
 const fps = 30;
 const lands = [
   "#ffffff",
@@ -21,7 +22,6 @@ var json;
   let url = new URL(location.href);
   json = (url.searchParams.get('open') ? localStorage.getItem('epidemic_simulator_json'):null) ?? `{
     "name": "epidemic_simulator",
-    "resolution": 1080,
     "states": [
       { "color": "#00a000", "name": "здоровые", "hiddengraph": true }, 
       { "color": "#a05000", "prob": 0.05, "time": 30000, "initial": 10, "zone": 8, "name": "коклюш" },
@@ -60,11 +60,11 @@ var graph_ = document.getElementById('graph');
 var grp = graph_.getContext('2d');
 var arr = [], counts = [], mosq = [], sorted = [];
 var lastTime = 0, frame_ = 0;
-var obj = JSON.parse(json)
+var obj = JSON.parse(json);
 var states = obj.states, options = obj.options, style = obj.style
 var landscape = obj.landscape ?? { type: [[0]], pow: [[0]], res: 1 };
 var scale = 420/options.size;
-let counter = { cells: options.count, rats: options.ratcount };
+var counter = { cells: options.count, rats: options.ratcount };
 var started = false, pause = false;
 var music = new Audio("assets/music.mp3"); //music from zvukipro.com
 var goalFPS = fps*(options.showspeed ?? 1), fpsTime = 1000/goalFPS, maxFPS = fps;

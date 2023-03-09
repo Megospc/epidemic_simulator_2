@@ -53,8 +53,8 @@ class Cell {
       this.st.count.cells++;
       if (this.st.teleporto && !init) {
         this.teleportated = { st: laststate, x: this.x, y: this.y }
-        this.x = Math.max(Math.min(this.x+random(this.st.teleporto*2+1)-this.st.teleporto, options.size), 0);
-        this.y = Math.max(Math.min(this.y+random(this.st.teleporto*2+1)-this.st.teleporto, options.size), 0);
+        this.x = testCordMinMax(this.x+random(this.st.teleporto*2+1)-this.st.teleporto, style.size);
+        this.y = testCordMinMax(this.y+random(this.st.teleporto*2+1)-this.st.teleporto, style.size);
       } else {
         this.teleportated = false;
       }
@@ -208,11 +208,11 @@ class Cell {
             let cellTrans = this.st.transparent ? 128:255;
             let trans = cellTrans*fram/5;
             ctx.fillStyle = this.st.color + ahex(trans);
-            ctx.fillRect(X((this.x-(style.size/2)*scale)+15), Y((this.y-(style.size/2)*scale)+15), X(style.size*scale), Y(style.size*scale));
+            ctx.fillRect(X((this.x-(style.size/2))*scale+15), Y((this.y-(style.size/2))*scale+15), X(style.size*scale), Y(style.size*scale));
             cellTrans = this.teleportated.st.transparent ? 128:255;
             trans = cellTrans*fram/5;
             ctx.fillStyle = this.teleportated.st.color+ ahex(255-trans);
-            ctx.fillRect(X((this.teleportated.x-(style.size/2)*scale)+15), Y((this.teleportated.y-(style.size/2)*scale)+15), X(style.size*scale), Y(style.size*scale));
+            ctx.fillRect(X(((this.teleportated.x-(style.size/2)))*scale+15), Y((this.teleportated.y-(style.size/2))*scale+15), X(style.size*scale), Y(style.size*scale));
           } else {
             let trans = this.st.transparent ? 128:255;
             ctx.fillStyle = this.st.color + ahex(trans);
@@ -617,7 +617,7 @@ function click(e) {
     for (let i = 0; i < arr.length; i++) {
       let p = arr[i];
       if (p.y >= y_-zone && p.y <= y_+zone && p.x >= x_-zone && p.x <= x_+zone) {
-        p.toState(0);
+        p.toState(options.healto);
       }
     }
   }
