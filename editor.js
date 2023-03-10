@@ -469,7 +469,7 @@ function readgame(json) {
               for (let j = 0; j < props.length; j++) {
                 let p = props[j];
                 let num = st[p.id];
-                if (p.type == "num" && (!p.firstno || i != 0)) $(`${p.id+i}`).value = eval(`eval(\`${p.aform}\`);`);
+                if (p.type == "num" && (!p.firstno || i != 0)) $(`${p.id+i}`).value = eval(`eval(\`${p.aform}\`);`) ?? p.default;
                 if (p.type == "chk") $(`${p.id+i}`).checked = p.invert ? !st[p.id]:st[p.id];
               }
               if (i != 0 && st.position) {
@@ -574,3 +574,9 @@ function ahex(a) {
   return (a < 16 ? "0":"") + a.toString(16);
 }
 newState("здоровые", "#00a000");
+if (sessionStorage.getItem("epidemic_simulator_open")) {
+  $('opengame').style.display = 'block';
+  $('editor').style.display = 'none';
+  readgame(sessionStorage.getItem("epidemic_simulator_open"));
+  sessionStorage.setItem("epidemic_simulator_open", '');
+}

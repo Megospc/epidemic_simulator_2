@@ -32,14 +32,14 @@ function parse(txt) {
   let str = "";
   let arr = [];
   for (let i = 0; i < txt.length; i++) {
-    if (txt[i] == "\n") {
+    if (txt[i] == ";") {
       arr.push(str);
       str = "";
     } else {
-      str += txt[i];
+      if (txt[i] != "\n") str += txt[i];
     }
   }
-  if (arr[0] == "EPIDEMIC_SIMULATOR_2_LOGS:") {
+  if (arr[0] == "EPIDEMIC_SIMULATOR_2_LOGS") {
     res("Начало обработки...");
     let keyval = function(txt) {
       let key = "";
@@ -144,8 +144,6 @@ function parse(txt) {
   document.getElementById('edit').style.display = 'block';
 }
 function edit() {
-  let w = open('index.html');
-  w.$('editor').style.display = 'none';
-  w.$('opengame').style.display = 'block';
-  w.readgame(props.get('json'));
+  sessionStorage.setItem("epidemic_simulator_open", props.get('json'));
+  open('index.html');
 }

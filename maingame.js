@@ -631,22 +631,22 @@ function click(e) {
     let slow = { num: 1000/fps };
     let frames = "";
     for (let j = 0; j < frame_; j++) {
-      frames += `\nFRAME ${j} (${flr(j/fps)}s)\n${stats[j].sum} | сумма\n`;
+      frames += `\nFRAME ${j} (${flr(j/fps)}s);\n${stats[j].sum} | сумма;\n`;
       for (let i = 0; i < counts[j].length; i++) {
-        frames += `${counts[j][i]} | ${states[i].name}\n`;
+        frames += `${counts[j][i]} | ${states[i].name};\n`;
       }
-      frames += `done in ${flr(stats[j].perf)}ms (maxFPS: ${flr(1000/stats[j].perf)})\n`;
+      frames += `done in ${flr(stats[j].perf)}ms (maxFPS: ${flr(1000/stats[j].perf)});\n`;
       if (stats[j].perf > slow.num) slow = { num: stats[j].perf, frame: j };
       if (stats[j].perf < fast.num) fast = { num: stats[j].perf, frame: j };
     }
-    let logs = `EPIDEMIC_SIMULATOR_2_LOGS:
-version = ${version}
-name    = ${obj.name}
-json    = ${json}
-date    = ${date}
-frames  = ${frame_} (${flr(frame_/fps)}s)
-fastest = ${flr(fast.num)}ms (frame: ${fast.frame})
-slowest = ${flr(slow.num)}ms (frame: ${slow.frame})
+    let logs = `EPIDEMIC_SIMULATOR_2_LOGS;
+version = ${version};
+name    = ${obj.name};
+json    = ${json};
+date    = ${date};
+frames  = ${frame_} (${flr(frame_/fps)}s);
+fastest = ${flr(fast.num)}ms (frame: ${fast.frame});
+slowest = ${flr(slow.num)}ms (frame: ${slow.frame});
 ${frames}`;
     sessionStorage.setItem("epidemic_simulator_logs", logs);
     open('logs.html');
