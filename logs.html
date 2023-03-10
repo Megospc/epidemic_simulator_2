@@ -10,21 +10,23 @@
   <header style="margin-bottom: 10px;">
     <b style="font-family: Monospace, sans-serif; font-size: 24px;">Просмотр логов</b>
   </header>
-  <div style="margin-bottom: 10px;">
-    <button onclick="download();" style="font-family: sans-serif, Monospace;">скачать</button>
+  <textarea id="logs" style="font-family: Monaco, sans-serif; font-size: 12px; width: 500px; height: 250px; resize: none; display: none;" readonly></textarea>
+  <input id="file" type="file" onchange="read(this.files[0]);" style="display: none;">
+  <div id="div" style="padding-top: 10px; margin-bottom: 10px; display: none;">
+    <div>
+      <button onclick="download();" style="font-family: sans-serif, Monospace;">скачать</button>
+      <button onclick="sessionStorage.setItem('epidemic_simulator_logs', ''); window.location.reload(); return false;" style="font-family: sans-serif, Monospace;">открыть</button>
+    </div>
+    <div style="padding-top: 10px;" id="parser">
+      <header>
+        <b style="font-family: Monospace, sans-serif; font-size: 18px;">Результат парсера:</b>
+      </header>
+      <div id="resultdiv" style="padding-top: 10px;">
+        <textarea id="result" style="font-family: Monaco, sans-serif; font-size: 12px; width: 500px; height: 250px; resize: none;" readonly></textarea>
+        <button id="edit" onclick="edit();" style="font-family: sans-serif, Monospace; display: none;">редактировать</button>
+      </div>
+    </div>
   </div>
-  <textarea id="logs" style="font-family: Monaco, sans-serif; font-size: 12px; width: 500px; height: 250px; resize: none;" readonly></textarea>
 </body>
 </html>
-<script>
-  var logs = sessionStorage.getItem('epidemic_simulator_logs');
-  if (!logs) close();
-  document.getElementById('logs').value = logs;
-  function download() {
-    let blob = new Blob([logs], { type: "text/plain" });
-    let a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `epidemic_simulator_logs.txt`;
-    a.click();
-  }
-</script>
+<script src="logs.js"></script>

@@ -15,6 +15,7 @@ class Cell {
     this.infect = this.st.infect ?? this.state;
     this.infectable = this.st.zone && this.st.prob;
     this.parasitetime = false;
+    this.relived = false;
     this.type = "cell";
     counter.cells++;
     this.st.count.cells++;
@@ -120,11 +121,15 @@ class Cell {
       this.infectable = true;
       this.restend = false;
     }
-    if ((!this.alive) && this.infectable && this.st.after+this.time < timeNow()) {
+    if (!this.alive && this.infectable && this.st.after+this.time < timeNow()) {
       this.infectable = false;
       this.st.count.cells--;
       counter.cells--;
-    } 
+    }
+    if (!this.alive && this.st.relivetime && this.time+this.st.relivetime < timeNow() && !this.relived) {
+      if (this.st.reliveprob > Math.random()) arr[this.id] = new Cell(this.id, this.x, this.y, this.st.transform);
+      else this.relived = true;
+    }
     if ((this.infectable || (this.st.magnet && this.st.magnetpow && this.alive) || (this.st.parasite && this.alive)) && this.frame !== frame_) {
       let inzone = 0;
       for (let i = 0; i < arr.length; i++) {
@@ -202,6 +207,11 @@ class Cell {
   render() {
     if (!this.st.invisible) {
       if (this.alive) {
+        let f = function(o) {
+          let trans = o.st.transparent ? 128:255;
+          ctx.fillStyle = o.st.color + ahex(trans);
+          ctx.fillRect(X((o.x-(style.size/2))*scale+15), Y((o.y-(style.size/2))*scale+15), X(style.size*scale), Y(style.size*scale));
+        };
         if (this.teleportated) {
           if (frame_ < this.frame+5 && style.anim && this.frame !== false) {
             let fram = frame_-this.frame;
@@ -213,15 +223,9 @@ class Cell {
             trans = cellTrans*fram/5;
             ctx.fillStyle = this.teleportated.st.color+ ahex(255-trans);
             ctx.fillRect(X(((this.teleportated.x-(style.size/2)))*scale+15), Y((this.teleportated.y-(style.size/2))*scale+15), X(style.size*scale), Y(style.size*scale));
-          } else {
-            let trans = this.st.transparent ? 128:255;
-            ctx.fillStyle = this.st.color + ahex(trans);
-            ctx.fillRect(X((this.x-(style.size/2))*scale+15), Y((this.y-(style.size/2))*scale+15), X(style.size*scale), Y(style.size*scale));
-          }
+          } else f(this);
         } else {
-          let trans = this.st.transparent ? 128:255;
-          ctx.fillStyle = this.st.color + ahex(trans);
-          ctx.fillRect(X((this.x-(style.size/2))*scale+15), Y((this.y-(style.size/2))*scale+15), X(style.size*scale), Y(style.size*scale));
+          f(this);
           if (this.magnet && style.anim) {
             let trans = this.st.transparent ? 64:128;
             ctx.fillStyle = this.st.color + ahex(trans);
@@ -231,7 +235,7 @@ class Cell {
               let fram = frame_-this.frame;
               let cellTrans = this.st.transparent ? 128:255;
               let trans = ahex(cellTrans*(5-fram)/10);
-              let size = 2*style.size;
+              let size = 2*style.size;              
               ctx.fillStyle = this.st.color + trans;
               ctx.fillRect(X((this.x-(size/2))*scale+15), Y((this.y-(size/2))*scale+15), X(size*scale), Y(size*scale));
             }

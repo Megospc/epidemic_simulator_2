@@ -80,42 +80,8 @@
   width: 15px;
   height: 15px;
   border-radius: 3px;
-}
-#colorred {
-  background-color: #a00000;
-  border: 2px solid #900000;
-}
-#colorora {
-  background-color: #a05000;
-  border: 2px solid #904800;
-}
-#coloryel {
-  background-color: #a0a000;
-  border: 2px solid #909000;
-}
-#colorgre {
-  background-color: #00a000;
-  border: 2px solid #009000;
-}
-#coloraqu {
-  background-color: #00a0a0;
-  border: 2px solid #009090;
-}
-#colorblu {
-  background-color: #0000a0;
-  border: 2px solid #000090;
-}
-#colormag {
-  background-color: #a000a0;
-  border: 2px solid #900090;
-}
-#colorpur {
-  background-color: #a00050;
-  border: 2px solid #900048;
-}
-#colorbla {
-  background-color: #000000;
-  border: 2px solid #202020;
+  border-width: 2px;
+  border-style: solid;
 }
 .name {
   font-size: 15px;

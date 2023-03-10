@@ -39,6 +39,8 @@ const props = [
   { title: "Дальняя атака(шт.):", type: "num", id: "farinf", check: [0, 5, true], default: 0, form: "${num}", aform: "${num}" },
   { title: "Сумасшедший(‰):", type: "num", id: "crazy", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
   { title: "Крысы(шт.):", type: "num", id: "ratinit", check: [0, 'options.ratcount', true], default: 0, form: "${num}", aform: "${num}", firstno: true },
+  { title: "Воскрешение время(с.):", type: "num", id: "relivetime", check: [0, 120, false], default: 0, form: "${num}*1000", aform: "${num}/1000" },
+  { title: "Воскрешение вероятность(%):", type: "num", id: "reliveprob", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
   { title: "Группа:", type: "num", id: "group", check: [0, 'states.length', true], default: 0, form: "${num}", aform: "${num}" },
   { title: "Грабитель", type: "chk", id: "robber", default: false },
   { title: "Все за одного", type: "chk", id: "allone", default: false },
@@ -221,15 +223,19 @@ function newState(name, color) {
       <b id="points${num}" class="label" style="color: ${color};">0</b>
     </div>
     <input type="color" id="color${num}" class="colorsel" value="${color}">
-    <button class="color" id="colorred" onclick="$('color${num}').value='#a00000'; updateStates();"></button>
-    <button class="color" id="colorora" onclick="$('color${num}').value='#a05000'; updateStates();"></button>
-    <button class="color" id="coloryel" onclick="$('color${num}').value='#a0a000'; updateStates();"></button>
-    <button class="color" id="colorgre" onclick="$('color${num}').value='#00a000'; updateStates();"></button>
-    <button class="color" id="coloraqu" onclick="$('color${num}').value='#00a0a0'; updateStates();"></button>
-    <button class="color" id="colorblu" onclick="$('color${num}').value='#0000a0'; updateStates();"></button>
-    <button class="color" id="colormag" onclick="$('color${num}').value='#a000a0'; updateStates();"></button>
-    <button class="color" id="colorpur" onclick="$('color${num}').value='#a00050'; updateStates();"></button>
-    <button class="color" id="colorbla" onclick="$('color${num}').value='#000000'; updateStates();"></button>
+    <button class="color" style="background-color: #a00000; border-color: #900000;" onclick="$('color${num}').value='#a00000'; updateStates();"></button>
+    <button class="color" style="background-color: #a05000; border-color: #904000;" onclick="$('color${num}').value='#a05000'; updateStates();"></button>
+    <button class="color" style="background-color: #a0a000; border-color: #909000;" onclick="$('color${num}').value='#a0a000'; updateStates();"></button>
+    <button class="color" style="background-color: #50a000; border-color: #409000;" onclick="$('color${num}').value='#50a000'; updateStates();"></button>
+    <button class="color" style="background-color: #00a000; border-color: #009000;" onclick="$('color${num}').value='#00a000'; updateStates();"></button>
+    <button class="color" style="background-color: #00a050; border-color: #009040;" onclick="$('color${num}').value='#00a050'; updateStates();"></button>
+    <button class="color" style="background-color: #00a0a0; border-color: #009090;" onclick="$('color${num}').value='#00a0a0'; updateStates();"></button>
+    <button class="color" style="background-color: #0050a0; border-color: #004090;" onclick="$('color${num}').value='#0050a0'; updateStates();"></button>
+    <button class="color" style="background-color: #0000a0; border-color: #000090;" onclick="$('color${num}').value='#0000a0'; updateStates();"></button>
+    <button class="color" style="background-color: #5000a0; border-color: #400090;" onclick="$('color${num}').value='#5000a0'; updateStates();"></button>
+    <button class="color" style="background-color: #a000a0; border-color: #900090;" onclick="$('color${num}').value='#a000a0'; updateStates();"></button>
+    <button class="color" style="background-color: #a00050; border-color: #900040;" onclick="$('color${num}').value='#a00050'; updateStates();"></button>
+    <button class="color" style="background-color: #000000; border-color: #202020;" onclick="$('color${num}').value='#000000'; updateStates();"></button>
     <div><input type="checkbox" id="transparent${num}" onchange="updateStates()">
     <label for="transparent${num}" class="label">Полупрозрачность</label></div>
     <div><label for="prob${num}" class="label">Вероятность(%):</label>
