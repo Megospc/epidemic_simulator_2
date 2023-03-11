@@ -674,8 +674,9 @@ function start() {
   arr = [];
   counts = [];
   mosq = [];
-  perfs = [];
+  stats = [];
   frame_ = 0;
+  randomed = 0;
   counter = { cells: 0, rats: 0 };
   states[0].count = { cells: 0, rats: 0 };
   for (let i = 1, j = 0; i < states.length; i++) {
