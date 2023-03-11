@@ -1,4 +1,4 @@
-const version = "2.5.11";
+const version = "2.5.16";
 const fps = 30;
 const lands = [
   "#ffffff",
@@ -59,7 +59,7 @@ var ctx = canvas.getContext('2d');
 var graph_ = document.getElementById('graph');
 var grp = graph_.getContext('2d');
 var arr = [], counts = [], mosq = [], sorted = [], stats = [];
-var lastTime = 0, frame_ = 0, date = 0;
+var lastTime = 0, frame_ = 0, date = 0, randomed = 0;
 var obj = JSON.parse(json);
 var states = obj.states, options = obj.options, style = obj.style
 var landscape = obj.landscape ?? { type: [[0]], pow: [[0]], res: 1 };
@@ -112,7 +112,11 @@ function resize() {
 resize();
 addEventListener('resize', resize);
 function random(max) {
-  return Math.random()*max;
+  return rnd()*max;
+}
+function rnd() {
+  randomed++;
+  return Math.random();
 }
 function clear() {
   ctx.fillStyle = "#ffffff";
@@ -127,11 +131,22 @@ function Y(y) {
 function timeNow() {
   return frame_/fps*1000;
 }
+function vib(len) {
+  if (options.vibrate && navigator.vibrate) navigator.vibrate(len);
+}
 function flr(num) {
   num = Math.floor(num*10)/10;
   return num%1 == 0 ? num+".0":num;
 }
+function strnn(str) {
+  let out = "";
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] != "\n") out += str[i];
+  }
+  return out;
+}
 function explosion() {
+  vib(50);
   for (let i = 0; i < arr.length; i++) {
     let p = arr[i];
     if (p.type == "cell" && p.land.type == 10) {

@@ -23,7 +23,7 @@ class Cell {
     {
       let px = options.size/landscape.res;
       this.land = { x: Math.floor(this.x/px), y: Math.floor(this.y/px) };
-      this.land.type = this.st.antiland > Math.random() ? 0:landscape.type[this.land.x][this.land.y];
+      this.land.type = this.st.antiland > rnd() ? 0:landscape.type[this.land.x][this.land.y];
       this.land.pow = landscape.pow[this.land.x][this.land.y];
     }
     {
@@ -72,7 +72,7 @@ class Cell {
     }
   }
   timeend() {
-    if (Math.random() <= this.st.heal) {
+    if (rnd() <= this.st.heal) {
       if (this.st.transform >= 0) this.toState(this.st.transform);
       else this.toState(Math.floor(random(states.length)));
     } else {
@@ -81,7 +81,7 @@ class Cell {
   }
   dead() {
     if (this.alive) {
-      if (this.land.type == 11 && this.land.pow > Math.random()) {
+      if (this.land.type == 11 && this.land.pow > rnd()) {
         this.toState(0);
       } else {
         this.alive = false;
@@ -103,18 +103,18 @@ class Cell {
           }
         }
       }
-      if (this.land.type == 6 && this.land.pow > Math.random()) arr.push(new Rat(arr.length, this.x, this.y));
+      if (this.land.type == 6 && this.land.pow > rnd()) arr.push(new Rat(arr.length, this.x, this.y));
     }
   }
   handler() {
     if (this.alive) {
-      if (this.land.type == 1 && this.land.pow > Math.random()) this.dead();
-      if (this.land.type == 12 && this.land.pow/(this.st.builder ? 100:1) > Math.random()) this.dead();
-      if (this.state && this.land.type == 2 && this.land.pow > Math.random()) this.toState(0);
-      if (this.land.type == 7 && this.land.pow > Math.random() && this.st.allergy != -1) this.toState(this.st.allergy);
-      if (this.alive && this.land.type == 13 && this.land.pow > Math.random()) { this.dead(); arr[this.id] = new Rat(this.id, this.x, this.y, this.state); }
-      if (this.state && this.land.type == 9 && this.land.pow > Math.random() && this.st.waterscary) this.dead();
-      if (this.land.type == 10 && this.land.pow/1000 > Math.random()) explosion();
+      if (this.land.type == 1 && this.land.pow > rnd()) this.dead();
+      if (this.land.type == 12 && this.land.pow/(this.st.builder ? 100:1) > rnd()) this.dead();
+      if (this.state && this.land.type == 2 && this.land.pow > rnd()) this.toState(0);
+      if (this.land.type == 7 && this.land.pow > rnd() && this.st.allergy != -1) this.toState(this.st.allergy);
+      if (this.alive && this.land.type == 13 && this.land.pow > rnd()) { this.dead(); arr[this.id] = new Rat(this.id, this.x, this.y, this.state); }
+      if (this.state && this.land.type == 9 && this.land.pow > rnd() && this.st.waterscary) this.dead();
+      if (this.land.type == 10 && this.land.pow/1000 > rnd()) explosion();
       if (this.st.time && this.time+this.st.time <= timeNow()) this.timeend();
     }
     if (this.restend && this.restend < timeNow() && this.alive) {
@@ -127,7 +127,7 @@ class Cell {
       counter.cells--;
     }
     if (!this.alive && this.st.relivetime && this.time+this.st.relivetime < timeNow() && !this.relived) {
-      if (this.st.reliveprob > Math.random()) arr[this.id] = new Cell(this.id, this.x, this.y, this.st.transform);
+      if (this.st.reliveprob > rnd()) arr[this.id] = new Cell(this.id, this.x, this.y, this.st.transform);
       else this.relived = true;
     }
     if ((this.infectable || (this.st.magnet && this.st.magnetpow && this.alive) || (this.st.parasite && this.alive)) && this.frame !== frame_) {
@@ -137,24 +137,24 @@ class Cell {
         if (p.state != this.infect && p.state != this.state && p.alive && (!this.st.group || this.st.group != p.st.group)) {
           if (p.type == "cell" && p.x >= this.x-this.st.magnet && p.x <= this.x+this.st.magnet && p.y >= this.y-this.st.magnet && p.y <= this.y+this.st.magnet) {
             let c = (this.st.magnet-Math.sqrt(((this.x-p.x)**2)+((this.y-p.y)**2)))/this.st.magnet;
-            p.magnet = {};
-            p.magnet.y = p.y < this.y ? this.st.magnetpow*c:-this.st.magnetpow*c;
-            p.magnet.x = p.x < this.x ? this.st.magnetpow*c:-this.st.magnetpow*c;
+            p.magnet = { x: p.magnet ? p.magnet.x:0, y: p.magnet ? p.magnet.y:0 };
+            p.magnet.y += p.y < this.y ? this.st.magnetpow*c:-this.st.magnetpow*c;
+            p.magnet.x += p.x < this.x ? this.st.magnetpow*c:-this.st.magnetpow*c;
           }
-          if (((this.land.type == 3 && this.land.pow > Math.random() && p.land.type == 3 && p.type == "cell") || (this.x-this.st.zone <= p.x && this.x+this.st.zone >= p.x && this.y-this.st.zone <= p.y && this.y+this.st.zone >= p.y)) && ! (this.land.type == 14 && this.land.pow > Math.random() && p.land.type == 14 && p.type == "cell")) {
+          if (((this.land.type == 3 && this.land.pow > rnd() && p.land.type == 3 && p.type == "cell") || (this.x-this.st.zone <= p.x && this.x+this.st.zone >= p.x && this.y-this.st.zone <= p.y && this.y+this.st.zone >= p.y)) && ! (this.land.type == 14 && this.land.pow > rnd() && p.land.type == 14 && p.type == "cell")) {
             inzone++;
-            if (Math.random() < this.st.prob*(this.land.type == 5 ? this.land.pow+1:1) && (p.st.protect ?? 0)-(this.st.spikes ?? 0) < Math.random()) {
-              if (Math.random() < this.st.killer) {
+            if (rnd() < this.st.prob*(this.land.type == 5 ? this.land.pow+1:1) && (p.st.protect ?? 0)-(this.st.spikes ?? 0) < rnd()) {
+              if (rnd() < this.st.killer) {
                 p.dead();
               } else {
                 p.toState(this.infect);
               }
               for (let i = 0; i < this.st.farinf; i++) arr[Math.floor(random(arr.length))].toState(this.state);
             } else {
-              if (Math.random() < this.st.attacktrans && p.state != this.st.transform) {
+              if (rnd() < this.st.attacktrans && p.state != this.st.transform) {
                 p.toState(this.transform ?? 0);
               } else {
-                if (Math.random() < p.st.cattack) this.toState(p.state);
+                if (rnd() < p.st.cattack) this.toState(p.state);
               }
             }
           }
@@ -170,7 +170,7 @@ class Cell {
   }
   move() {
     if (this.alive) {
-      if (this.st.crazy/10 > Math.random()) this.speed = { x: random(options.speed)-(options.speed/2), y: random(options.speed)-(options.speed/2) };
+      if (this.st.crazy/10 > rnd()) this.speed = { x: random(options.speed)-(options.speed/2), y: random(options.speed)-(options.speed/2) };
       let c = this.land.type == 4 ? 1-(this.land.pow):1;
       if (this.st.robber && options.quar) this.home = { minx: Math.max(style.size/2, this.x-options.quar), miny: Math.max(style.size/2, this.y-options.quar), maxx: Math.min(options.size-(style.size/2), this.x+options.quar), maxy: Math.min(options.size-(style.size/2), this.y+options.quar) };
       let home = Object.assign({}, this.home);
@@ -199,7 +199,7 @@ class Cell {
       {
         let px = options.size/landscape.res;
         this.land = { x: Math.floor(this.x/px), y: Math.floor(this.y/px) };
-        this.land.type = this.st.antiland > Math.random() ? 0:landscape.type[this.land.x][this.land.y];
+        this.land.type = this.st.antiland > rnd() ? 0:landscape.type[this.land.x][this.land.y];
         this.land.pow = landscape.pow[this.land.x][this.land.y];
       }
     }
@@ -308,13 +308,13 @@ class  Mosquito {
     }
   }
   handler() {
-    if (this.land.type == 8 && this.land.pow > Math.random()) this.alive = false;
+    if (this.land.type == 8 && this.land.pow > rnd()) this.alive = false;
     if (this.alive) {
       for (let i = 0; i < arr.length; i++) {
         let p = arr[i];
         if (p.state != this.state && p.alive) {
           if (this.x - options.mosquitozone <= p.x && this.x + options.mosquitozone >= p.x && this.y - options.mosquitozone <= p.y && this.y + options.mosquitozone >= p.y) {
-            if (Math.random() < options.mosquitoprob && (p.st.protect ?? 0) < Math.random()) {
+            if (rnd() < options.mosquitoprob && (p.st.protect ?? 0) < rnd()) {
               p.toState(this.state);
             }
           }
@@ -387,13 +387,13 @@ class Rat {
     }
   }
   handler() {
-    if (this.land.type == 8 && this.land.pow > Math.random()) this.dead();
+    if (this.land.type == 8 && this.land.pow > rnd()) this.dead();
     if (this.infectable && this.frame !== frame_) {
       for (let i = 0; i < arr.length; i++) {
         let p = arr[i];
         if (p.state != this.infect && p.state != this.state && p.alive && p.type == "cell") {
           if (this.x-this.st.zone <= p.x && this.x+this.st.zone >= p.x && this.y-this.st.zone <= p.y && this.y+this.st.zone >= p.y) {
-            if (Math.random() < this.st.prob && (p.st.protect ?? 0) < Math.random()) p.toState(this.infect);
+            if (rnd() < this.st.prob && (p.st.protect ?? 0) < rnd()) p.toState(this.infect);
           }
         }
       }
@@ -617,13 +617,16 @@ function click(e) {
   let x = (e.pageX-cx)/c;
   let y = (e.pageY-cy)/c;
   if (x > 850 && y > 400) {
+    vib(50);
     pause = !pause;
   }
   if (pause && x > 800 && x < 850 && y > 400) {
+    vib(100);
     start();
     pause = false;
   }
   if (pause && x > 760 && x < 790 && y > 400) {
+    vib(100);
     fullScreen(document.documentElement);
   }
   if (pause && x > 720 && x < 750 && y > 400) {
@@ -631,27 +634,29 @@ function click(e) {
     let slow = { num: 1000/fps };
     let frames = "";
     for (let j = 0; j < frame_; j++) {
-      frames += `\nFRAME ${j} (${flr(j/fps)}s);\n${stats[j].sum} | сумма;\n`;
+      frames += `\nFRAME ${j} (${flr(j/fps)}s):\n${stats[j].sum} | сумма\n`;
       for (let i = 0; i < counts[j].length; i++) {
-        frames += `${counts[j][i]} | ${states[i].name};\n`;
+        frames += `${counts[j][i]} | ${states[i].name}\n`;
       }
-      frames += `done in ${flr(stats[j].perf)}ms (maxFPS: ${flr(1000/stats[j].perf)});\n`;
+      frames += `done in ${flr(stats[j].perf)}ms (maxFPS: ${flr(1000/stats[j].perf)})\n`;
       if (stats[j].perf > slow.num) slow = { num: stats[j].perf, frame: j };
       if (stats[j].perf < fast.num) fast = { num: stats[j].perf, frame: j };
     }
-    let logs = `EPIDEMIC_SIMULATOR_2_LOGS;
-version = ${version};
-name    = ${obj.name};
-json    = ${json};
-date    = ${date};
-frames  = ${frame_} (${flr(frame_/fps)}s);
-fastest = ${flr(fast.num)}ms (frame: ${fast.frame});
-slowest = ${flr(slow.num)}ms (frame: ${slow.frame});
+    let logs = `EPIDEMIC_SIMULATOR_2_LOGS:
+version = ${version}
+name    = ${strnn(obj.name)}
+json    = ${strnn(json)}
+date    = ${date}
+frames  = ${frame_} (${flr(frame_/fps)}s)
+fastest = ${flr(fast.num)}ms (frame: ${fast.frame})
+slowest = ${flr(slow.num)}ms (frame: ${slow.frame})
+random  = ${randomed}
 ${frames}`;
     sessionStorage.setItem("epidemic_simulator_logs", logs);
     open('logs.html');
   }
   if (!pause && options.healzone && y >= 15 && y <= 435 && x >= 15 && x <= 435) {
+    vib(30);
     let x_ = (x-15)/420*options.size;
     let y_ = (y-15)/420*options.size;
     let zone = options.healzone;
@@ -699,6 +704,7 @@ function start() {
 }
 start();
 addEventListener('click', () => {
+  vib(100);
   date = Date.now();
   music.loop = true;
   if (options.music) music.play();

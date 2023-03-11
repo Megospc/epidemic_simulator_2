@@ -23,7 +23,13 @@
       </header>
       <div id="resultdiv" style="padding-top: 10px;">
         <textarea id="result" style="font-family: Monaco, sans-serif; font-size: 12px; width: 500px; height: 250px; resize: none;" readonly></textarea>
-        <button id="edit" onclick="edit();" style="font-family: sans-serif, Monospace; display: none;">редактировать</button>
+        <div id="parsed" style="display: none;">
+          <canvas id="graph0" width="500" height="250" style="width: 250px; height: 125px;"></canvas>
+          <canvas id="graph1" width="500" height="250" style="width: 250px; height: 125px;"></canvas>
+          <canvas id="graph2" width="500" height="250" style="width: 250px; height: 125px;"></canvas>
+          <canvas id="legend" width="500" height="250" style="width: 250px; height: 125px;"></canvas>
+          <div style="padding-top: 10px;"><button onclick="edit();" style="font-family: sans-serif, Monospace;">редактировать</button></div>
+        </div>
       </div>
     </div>
   </div>

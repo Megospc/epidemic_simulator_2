@@ -68,6 +68,8 @@
         <input type="number" id="healto" value="1" onchange="checknum(this, 1, states.length, true); window.options.healto = Number(this.value)-1;"></div> 
         <div><input type="checkbox" id="music" onchange="window.options.music = this.checked;" checked>
         <label for="music" class="label">Музыка</label></div>
+        <div id="vibratediv" style="display: none;"><input type="checkbox" id="vibrate" onchange="window.options.vibrate = this.checked;">
+        <label for="vibrate" class="label">Вибрации</label></div>
         <div><input type="checkbox" id="turbo" onchange="window.options.turbo = this.checked;">
         <label for="turbo" class="label">Турбо-режим</label></div>
         <div><input type="checkbox" id="biggraph" onchange="window.options.biggraph = this.checked;">

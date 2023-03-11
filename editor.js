@@ -70,7 +70,8 @@ var options = {
   graphmove: false,
   ratcount: 0,
   ratspeed: 7,
-  healto: 0
+  healto: 0,
+  vibrate: false
 };
 var openedadd = [];
 var openedaddopt = false;
@@ -79,6 +80,7 @@ var $ = (id) => document.getElementById(id);
 var lan = $('landscape').getContext('2d');
 var name = "без имени";
 var landsel;
+if (navigator.vibrate) $('vibratediv').style.display= 'block';
 {
   for (let i = lands.length-1; i >= 0; i--) {
     let p = lands[i];
@@ -224,7 +226,9 @@ function newState(name, color) {
     </div>
     <input type="color" id="color${num}" class="colorsel" value="${color}">
     <button class="color" style="background-color: #a00000; border-color: #900000;" onclick="$('color${num}').value='#a00000'; updateStates();"></button>
+    <button class="color" style="background-color: #a02800; border-color: #902000;" onclick="$('color${num}').value='#a02800'; updateStates();"></button>
     <button class="color" style="background-color: #a05000; border-color: #904000;" onclick="$('color${num}').value='#a05000'; updateStates();"></button>
+    <button class="color" style="background-color: #a07800; border-color: #907000;" onclick="$('color${num}').value='#a07800'; updateStates();"></button>
     <button class="color" style="background-color: #a0a000; border-color: #909000;" onclick="$('color${num}').value='#a0a000'; updateStates();"></button>
     <button class="color" style="background-color: #50a000; border-color: #409000;" onclick="$('color${num}').value='#50a000'; updateStates();"></button>
     <button class="color" style="background-color: #00a000; border-color: #009000;" onclick="$('color${num}').value='#00a000'; updateStates();"></button>
@@ -384,11 +388,6 @@ function copystate(i) {
     let num = cs[p.id];
     if (p.type == "num") $(`${p.id+i}`).value = eval(`eval(\`${p.aform}\`);`);
     if (p.type == "chk") $(`${p.id+i}`).checked = p.invert ? !cs[p.id]:cs[p.id];
-  }
-  if (cs.position) {
-    $(`pos${i}`).checked = true;
-    $(`x${i}`).value = Math.floor(((cs.position[0].x ?? 210)-2.5)/((options.size-5)/200))-100;
-    $(`y${i}`).value = Math.floor(((cs.position[0].y ?? 210)-2.5)/((options.size-5)/200))-100;
   }
   updateStates();
 }
