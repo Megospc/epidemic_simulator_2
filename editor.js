@@ -80,7 +80,24 @@ var $ = (id) => document.getElementById(id);
 var lan = $('landscape').getContext('2d');
 var name = "без имени";
 var landsel;
-if (navigator.vibrate) $('vibratediv').style.display= 'block';
+{
+  let saved = JSON.parse(localStorage.getItem("epidemic_simulator_settings"));
+  if (navigator.vibrate) {
+    if (saved) {
+      $('vibrate').checked = saved.vibrate;
+      options.vibrate = saved.vibrate;
+    }
+    $('vibratediv').style.display= 'block';
+  }
+  if (saved) {
+    $('resshow').innerHTML = `${saved.resolution}р `;
+    options.resolution = saved.resolution;
+    $('graphmove').checked = saved.graphmove;
+    options.graphmove = saved.graphmove;
+    $('biggraph').checked = saved.biggraph;
+    options.biggraph = saved.biggraph;
+  }
+}
 {
   for (let i = lands.length-1; i >= 0; i--) {
     let p = lands[i];
@@ -499,7 +516,8 @@ function readgame(json) {
               biggraph: options.biggraph,
               graphmove: options.graphmove,
               ratcount: obj.options.ratcount ?? 0,
-              ratspeed: obj.options.ratspeed ?? 7
+              ratspeed: obj.options.ratspeed ?? 7,
+              vibrate: options.vibrate
             };
             $('size').value = options.size;
             $('count').value = options.count;
@@ -510,12 +528,8 @@ function readgame(json) {
             $('mosquitoprob').value = options.mosquitoprob*100;
             $('mosquitozone').value = options.mosquitozone;
             $('healzone').value = options.healzone;
+            $('healto').value = options.healto+1;
             $('music').checked = options.music;
-            $('biggraph').checked = options.biggraph;
-            $('turbo').checked = options.turbo;
-            $('graphmove').checked = options.graphmove;
-            $('speedshow').innerHTML = options.showspeed == 1000 ? "Макс.": `x${options.showspeed} `;
-            $('resshow').innerHTML = options.resolution + "р ";
             $('ratcount').value = options.ratcount;
             $('ratspeed').value = options.ratspeed;
             landscape = {
@@ -571,6 +585,14 @@ function testCount() {
 function ahex(a) {
   a = Math.floor(a);
   return (a < 16 ? "0":"") + a.toString(16);
+}
+function saveSets() {
+  localStorage.setItem("epidemic_simulator_settings", JSON.stringify({
+    vibrate: options.vibrate,
+    resolution: options.resolution,
+    biggraph: options.biggraph,
+    graphmove: options.graphmove
+  }));
 }
 newState("здоровые", "#00a000");
 if (sessionStorage.getItem("epidemic_simulator_open")) {
