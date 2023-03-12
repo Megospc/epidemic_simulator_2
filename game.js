@@ -1,4 +1,4 @@
-const version = "2.5.17";
+const version = "2.5.18";
 const fps = 30;
 const lands = [
   "#ffffff",
@@ -59,7 +59,7 @@ var ctx = canvas.getContext('2d');
 var graph_ = document.getElementById('graph');
 var grp = graph_.getContext('2d');
 var arr = [], counts = [], mosq = [], sorted = [], stats = [];
-var lastTime = 0, frame_ = 0, date = 0, randomed = 0;
+var lastTime = 0, frame_ = 0, date = 0, randomed = 0, heals = 0;
 var obj = JSON.parse(json);
 var states = obj.states, options = obj.options, style = obj.style
 var landscape = obj.landscape ?? { type: [[0]], pow: [[0]], res: 1 };

@@ -651,6 +651,7 @@ frames  = ${frame_} (${flr(frame_/fps)}s)
 fastest = ${flr(fast.num)}ms (frame: ${fast.frame})
 slowest = ${flr(slow.num)}ms (frame: ${slow.frame})
 random  = ${randomed}
+heals   = ${heals}
 ${frames}`;
     sessionStorage.setItem("epidemic_simulator_logs", logs);
     open('logs.html');
@@ -666,6 +667,7 @@ ${frames}`;
         p.toState(options.healto);
       }
     }
+    heals++;
   }
 }
 function start() {
@@ -677,6 +679,7 @@ function start() {
   stats = [];
   frame_ = 0;
   randomed = 0;
+  heals = 0;
   counter = { cells: 0, rats: 0 };
   states[0].count = { cells: 0, rats: 0 };
   for (let i = 1, j = 0; i < states.length; i++) {
