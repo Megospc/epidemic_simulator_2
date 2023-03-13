@@ -76,6 +76,7 @@
         <label for="biggraph" class="label">Большой график</label></div>
         <div><input type="checkbox" id="graphmove" onchange="window.options.graphmove = this.checked; saveSets();">
         <label for="graphmove" class="label">Сдвиг графика</label></div>
+        <div><p id="tosource" onclick="localStorage.setItem('epidemic_simulator_source', createJSON(2)); window.open('source.html');">Исходный код <img src="assets/source.svg" height="5"></p></div>
       </div>
       <div id="landscapediv">
         <p class="label">Ландшафт:</p>

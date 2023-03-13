@@ -16,6 +16,7 @@ class Cell {
     this.infectable = this.st.zone && this.st.prob;
     this.parasitetime = false;
     this.relived = false;
+    this.speedc = 1;
     this.type = "cell";
     counter.cells++;
     this.st.count.cells++;
@@ -143,6 +144,7 @@ class Cell {
           }
           if (((this.land.type == 3 && this.land.pow > rnd() && p.land.type == 3 && p.type == "cell") || (this.x-this.st.zone <= p.x && this.x+this.st.zone >= p.x && this.y-this.st.zone <= p.y && this.y+this.st.zone >= p.y)) && ! (this.land.type == 14 && this.land.pow > rnd() && p.land.type == 14 && p.type == "cell")) {
             inzone++;
+            if (this.st.stopping) p.speedc *= 1-this.st.stopping;
             if (rnd() < this.st.prob+(p.st.defect ?? 0)+(this.land.type == 5 ? this.land.pow:0) && (p.st.protect ?? 0)-(this.st.spikes ?? 0) < rnd()) {
               if (rnd() < this.st.killer) {
                 p.dead();
@@ -190,8 +192,8 @@ class Cell {
         }
       }
       let magnet = this.magnet ?? { x: 0, y: 0 };
-      this.x += (this.speed.x*(this.st.speed ?? 1)*c)+magnet.x;
-      this.y += (this.speed.y*(this.st.speed ?? 1)*c)+magnet.y;
+      this.x += (this.speed.x*(this.st.speed ?? 1)*c*this.speedc)+magnet.x;
+      this.y += (this.speed.y*(this.st.speed ?? 1)*c*this.speedc)+magnet.y;
       if (this.x < home.minx) this.speed.x *=-1, this.x = home.minx;
       if (this.x > home.maxx) this.speed.x *=-1, this.x = home.maxx;
       if (this.y < home.miny) this.speed.y *=-1, this.y = home.miny;
@@ -276,6 +278,7 @@ class Cell {
   }
   end() {
     this.magnet = null;
+    this.speedc = 1;
   }
 }
 class  Mosquito {

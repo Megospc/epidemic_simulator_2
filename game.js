@@ -1,4 +1,4 @@
-const version = "2.5.19";
+const version = "2.5.20";
 const fps = 30;
 const lands = [
   "#ffffff",

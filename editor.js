@@ -43,6 +43,7 @@ const props = [
   { title: "Воскрешение вероятность(%):", type: "num", id: "reliveprob", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
   { title: "Группа:", type: "num", id: "group", check: [0, 'states.length', true], default: 0, form: "${num}", aform: "${num}" },
   { title: "Уязвимость(%):", type: "num", id: "defect", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
+  { title: "Остановка(%):", type: "num", id: "stopping", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
   { title: "Грабитель", type: "chk", id: "robber", default: false },
   { title: "Все за одного", type: "chk", id: "allone", default: false },
   { title: "Невидимка", type: "chk", id: "invisible", default: false },
@@ -185,7 +186,7 @@ function playgame() {
   sessionStorage.setItem('epidemic_simulator_json', createJSON());
   open('game.html?open=1');
 }
-function createJSON() {
+function createJSON(space) {
   let opts = Object.assign({}, options);
   delete opts.resolution;
   delete opts.turbo;
@@ -218,7 +219,7 @@ function createJSON() {
     delete o.num;
     obj.states.push(o);
   }
-  return JSON.stringify(obj);
+  return JSON.stringify(obj, null, space ?? 0);
 }
 function newState(name, color) {
   let num = lastnum;
