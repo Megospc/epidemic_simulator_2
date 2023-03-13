@@ -143,7 +143,7 @@ class Cell {
           }
           if (((this.land.type == 3 && this.land.pow > rnd() && p.land.type == 3 && p.type == "cell") || (this.x-this.st.zone <= p.x && this.x+this.st.zone >= p.x && this.y-this.st.zone <= p.y && this.y+this.st.zone >= p.y)) && ! (this.land.type == 14 && this.land.pow > rnd() && p.land.type == 14 && p.type == "cell")) {
             inzone++;
-            if (rnd() < this.st.prob*(this.land.type == 5 ? this.land.pow+1:1) && (p.st.protect ?? 0)-(this.st.spikes ?? 0) < rnd()) {
+            if (rnd() < this.st.prob+(p.st.defect ?? 0)+(this.land.type == 5 ? this.land.pow:0) && (p.st.protect ?? 0)-(this.st.spikes ?? 0) < rnd()) {
               if (rnd() < this.st.killer) {
                 p.dead();
               } else {

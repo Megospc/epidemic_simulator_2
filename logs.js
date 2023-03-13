@@ -74,7 +74,8 @@ function parse(txt) {
         ["2.5.15", "11.03.2023"],
         ["2.5.16", "11.03.2023"],
         ["2.5.17", "12.03.2023"],
-        ["2.5.18", "12.03.2023"]
+        ["2.5.18", "12.03.2023"],
+        ["2.5.19", "13.03.2023"]
       ]);
       res(`Версия программы: ${props.get('version')} (${versions.get(props.get('version')) ?? "неизвестная"})`);
       res(`Дата: ${new Date(Number(props.get('date')))}`);
@@ -150,7 +151,7 @@ function parse(txt) {
         }
         ctx.stroke();
         ctx.fillStyle = "#a0000080";
-        ctx.fillRect(60, 200-((30/max*200)), 380, 3);
+        ctx.fillRect(60, 220-((30/max*200)), 380, 3);
         ctx = document.getElementById('graph2').getContext('2d');
         max = 0;
         for (let m = 0; m < frames.length; m++) {

@@ -42,6 +42,7 @@ const props = [
   { title: "Воскрешение время(с.):", type: "num", id: "relivetime", check: [0, 120, false], default: 0, form: "${num}*1000", aform: "${num}/1000" },
   { title: "Воскрешение вероятность(%):", type: "num", id: "reliveprob", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
   { title: "Группа:", type: "num", id: "group", check: [0, 'states.length', true], default: 0, form: "${num}", aform: "${num}" },
+  { title: "Уязвимость(%):", type: "num", id: "defect", check: [0, 100, false], default: 0, form: "${num}/100", aform: "${num}*100" },
   { title: "Грабитель", type: "chk", id: "robber", default: false },
   { title: "Все за одного", type: "chk", id: "allone", default: false },
   { title: "Невидимка", type: "chk", id: "invisible", default: false },
@@ -341,7 +342,7 @@ function updateState(n) {
   }
   if (n != 0) obj.position = $(`pos${i}`).checked ? [ { x: (Number($(`x${i}`).value)+100)*((options.size-5)/200)+2.5, y: (Number($(`y${i}`).value)+100)*((options.size-5)/200)+2.5 } ]:null;
   else obj.position = null;
-  obj.points += (obj.zone**2*(obj.prob+(obj.attacktrans/4)+obj.protect+(obj.spikes/3)+(obj.cattack/4)))*((obj.time ? obj.time/1000:(obj.parasite ? 1:240))+(obj.after/500)-(obj.rest/500))/(obj.parasite ? 120/obj.parasite:1)/(obj.allone ? 1000:1)/(obj.infect ? 100:1)*(obj.initial || obj.ratinit || (obj.addcount && obj.addtime) || i == 0 ? 1:0);
+  obj.points += (obj.zone**2*(obj.prob+(obj.attacktrans/4)+obj.protect+(obj.spikes/3)+(obj.cattack/4)-(obj.defect/3)))*(Math.min(obj.time ? obj.time/1000:240, obj.parasite ? obj.parasite/500:240)+(obj.after/500)-(obj.rest/500))/(obj.allone ? 1000:1)/(obj.infect ? 100:1)*(obj.initial || obj.ratinit || (obj.addcount && obj.addtime) || i == 0 ? 1:0);
   obj.points += obj.protect/100;
   if (obj.robber && options.quar) obj.points += options.size/options.size;
   if (n != 0) obj.points += obj.initial+(obj.ratinit*2)+(obj.mosquito*options.mosquitotime*(options.mosquitozone**2)*options.mosquitoprob/1000);
