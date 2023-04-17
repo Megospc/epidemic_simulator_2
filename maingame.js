@@ -11,7 +11,7 @@ class Cell {
     this.infectable = false;
     this.frame = this.state ? 0:false;
     this.teleportated = false;
-    this.magnet = null;
+    this.magnet = { x: 0, y: 0 };
     this.infect = this.st.infect ?? this.state;
     this.infectable = this.st.zone && this.st.prob;
     this.parasitetime = false;
@@ -137,8 +137,8 @@ class Cell {
         let p = arr[i];
         if (p.state != this.infect && p.state != this.state && p.alive && (!this.st.group || this.st.group != p.st.group)) {
           if (p.type == "cell" && p.x >= this.x-this.st.magnet && p.x <= this.x+this.st.magnet && p.y >= this.y-this.st.magnet && p.y <= this.y+this.st.magnet) {
-            let c = (this.st.magnet-Math.sqrt(((this.x-p.x)**2)+((this.y-p.y)**2)))/this.st.magnet;
-            p.magnet = { x: p.magnet ? p.magnet.x:0, y: p.magnet ? p.magnet.y:0 };
+            let srt = Math.sqrt(((this.x-p.x)**2)+((this.y-p.y)**2));
+            let c = (1-(srt/this.st.magnet))**2;
             p.magnet.y += p.y < this.y ? this.st.magnetpow*c:-this.st.magnetpow*c;
             p.magnet.x += p.x < this.x ? this.st.magnetpow*c:-this.st.magnetpow*c;
           }
@@ -191,9 +191,8 @@ class Cell {
           if (landscape.type[this.land.x][this.land.y-1] == 12) home.miny = Math.max(home.miny, (this.land.y*px)+(style.size/2));
         }
       }
-      let magnet = this.magnet ?? { x: 0, y: 0 };
-      this.x += (this.speed.x*(this.st.speed ?? 1)*c*this.speedc)+magnet.x;
-      this.y += (this.speed.y*(this.st.speed ?? 1)*c*this.speedc)+magnet.y;
+      this.x += (this.speed.x*(this.st.speed ?? 1)*c*this.speedc)+this.magnet.x;
+      this.y += (this.speed.y*(this.st.speed ?? 1)*c*this.speedc)+this.magnet.y;
       if (this.x < home.minx) this.speed.x *=-1, this.x = home.minx;
       if (this.x > home.maxx) this.speed.x *=-1, this.x = home.maxx;
       if (this.y < home.miny) this.speed.y *=-1, this.y = home.miny;
@@ -228,7 +227,7 @@ class Cell {
           } else f(this);
         } else {
           f(this);
-          if (this.magnet && style.anim) {
+          if ((this.magnet.x || this.magnet.y) && style.anim) {
             let trans = this.st.transparent ? 64:128;
             ctx.fillStyle = this.st.color + ahex(trans);
             ctx.fillRect(X((this.x-(style.size))*scale+15), Y((this.y-(style.size))*scale+15), X(style.size*2*scale), Y(style.size*2*scale));
@@ -277,7 +276,7 @@ class Cell {
     }
   }
   end() {
-    this.magnet = null;
+    this.magnet = { x: 0, y: 0 };
     this.speedc = 1;
   }
 }
