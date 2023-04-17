@@ -1,6 +1,6 @@
-const version = "2.5.20";
-const fps = 30;
-const lands = [
+const version = "2.6.2"; //версия программы
+const fps = 30; //количество кадров в игровой секунде
+const lands = [ //массив цветов ландшафтов
   "#ffffff",
   "#80a000",
   "#00a0a0",
@@ -15,8 +15,11 @@ const lands = [
   "#408020",
   "#000000",
   "#5000a0",
-  "#a05000"
+  "#a05000",
+  "#a07800"
 ];
+
+//получение JSON симуляции:
 var json;
 {
   let url = new URL(location.href);
@@ -51,25 +54,27 @@ var json;
       "chanim": true,
       "anim": true
     }
-  }`;
+  }`; //JSON по умолчанию
 }
-var cw, ch, cc, cx, cy, graph, interval;
-var canvas = document.getElementById('canvas');
-var ctx = canvas.getContext('2d');
-var graph_ = document.getElementById('graph');
-var grp = graph_.getContext('2d');
-var arr = [], counts = [], mosq = [], sorted = [], stats = [];
-var lastTime = 0, frame_ = 0, date = 0, randomed = 0, heals = 0;
-var obj = JSON.parse(json);
-var states = obj.states, options = obj.options, style = obj.style
-var landscape = obj.landscape ?? { type: [[0]], pow: [[0]], res: 1 };
-var scale = 420/options.size;
-var counter = { cells: options.count, rats: options.ratcount };
-var started = false, pause = false;
-var music = new Audio("assets/music.mp3"); //music from zvukipro.com
-var goalFPS = fps*(options.showspeed ?? 1), fpsTime = 1000/goalFPS, maxFPS = fps;
-stats.push({ perf: performance.now(), sum: options.count });
-function resize() {
+
+//объявление переменных:
+var cw, ch, cc, cx, cy, interval; //характеристики холста и интервал
+var canvas = document.getElementById('canvas'); //DOM холста
+var ctx = canvas.getContext('2d'); //контекст холста
+var arr = [], counts = [], mosq = [], sorted = [], stats = []; //массивы
+var lastTime = 0, frame_ = 0, date = 0, randomed = 0, heals = 0; //счётчики и другое
+var obj = JSON.parse(json); //объект симуляции
+var states = obj.states, options = obj.options, style = obj.style; //быстрый доступ к полям объекта
+var landscape = obj.landscape ?? { type: [[0]], pow: [[0]], res: 1 }; //быстрый доступ к ландшафту
+var scale = 420/options.size; //масштаб поля
+var counter = { cells: options.count, rats: options.ratcount }; //суммарный счётчик
+var started = false, pause = false; //"начата ли симуляция?" и пауза
+var music = new Audio("assets/music.mp3"); //музыка от zvukipro.com
+var goalFPS = fps*(options.showspeed ?? 1), fpsTime = 1000/goalFPS, maxFPS = fps; //переменные FPS
+
+stats.push({ perf: performance.now(), sum: options.count }); //сохранение первого кадра
+
+function resize() { //метод масштабирования холста
   w = window.innerWidth;
   h = window.innerHeight;
   let c = w/h;
@@ -101,16 +106,17 @@ function resize() {
   cc = res/900;
   canvas.style.top = `${Math.floor(Y)}px`;
   canvas.style.left = `${Math.floor(X)}px`;
-  graph_.width = Math.floor(250*cc);
-  graph_.height = Math.floor(120*cc);
   cx = Math.floor(X);
   cy = Math.floor(Y);
   cw = W;
   ch = H;
   if (!started) startrender();
 }
+
 resize();
 addEventListener('resize', resize);
+
+//случайные числа:
 function random(max) {
   return rnd()*max;
 }
@@ -118,23 +124,27 @@ function rnd() {
   randomed++;
   return Math.random();
 }
-function clear() {
+
+function clear() { //метод очистки холста
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
+
+//методы масштабирования координат на холсте:
 function X(x) {
   return Math.floor(x*cc);
 }
 function Y(y) {
   return Math.floor(y*cc);
 }
-function timeNow() {
+
+function timeNow() { //игровое время
   return frame_/fps*1000;
 }
-function vib(len) {
+function vib(len) { //метод вибрации
   if (options.vibrate && navigator.vibrate) navigator.vibrate(len);
 }
-function flr(num) {
+function flr(num) { //округление до десятых
   num = Math.floor(num*10)/10;
   return num%1 == 0 ? num+".0":num;
 }
@@ -145,7 +155,7 @@ function strnn(str) {
   }
   return out;
 }
-function explosion() {
+function explosion() { //ландшафт "взрывоопасная зона"
   vib(50);
   for (let i = 0; i < arr.length; i++) {
     let p = arr[i];
@@ -154,7 +164,7 @@ function explosion() {
     }
   }
 }
-function startrender() {
+function startrender() { //отрисовка изначального окна
   clear();
   ctx.fillStyle = "#a00000a0";
   ctx.font = `${X(21)}px Monospace`;
@@ -185,7 +195,7 @@ function startrender() {
   ctx.fillRect(X(445), Y(200), X(25), Y(25));
 }
 startrender();
-function fullScreen(e) {
+function fullScreen(e) { //метод полного экрана
   if(e.requestFullscreen) {
     e.requestFullscreen();
   } else if(e.webkitrequestFullscreen) {
@@ -194,7 +204,7 @@ function fullScreen(e) {
     e.mozRequestFullScreen();
   }
 }
-function sort() {
+function sort() { //метод сортировки статистики
   sorted = [];
   for (let i = 0; i < states.length; i++) {
     let st = states[i];
@@ -216,7 +226,7 @@ function sort() {
     }
   }
 }
-function ahex(a) {
+function ahex(a) { //HEX
   a = Math.floor(a);
   return (a < 16 ? "0":"") + a.toString(16);
 }
@@ -226,7 +236,7 @@ function degToRad(deg) {
 function testCordMinMax(c, size) {
   return Math.min(Math.max(c, size/2), options.size-(size/2));
 }
-function biggraph() {
+function biggraph() { //отрисовка большого графика
   let max = 2;
   let start = style.graphmove ? (frame_ < 290 ? 0:frame_-290):0;
   let timeinc = start*(1000/fps);
@@ -252,15 +262,15 @@ function biggraph() {
   ctx.fillRect(X(500), Y(200), X(360), Y(2));
   ctx.fillText("0", X(470), Y(205), X(30));
   ctx.fillRect(X(530), Y(15), X(2), Y(195));
-  ctx.fillText(`${flr(timeinc/1000)}`, X(525), Y(235), X(30));
+  ctx.fillText(`${flr(timeinc/1000)}`, X(525), Y(245), X(30));
   ctx.fillRect(X(602.5), Y(15), X(2), Y(195));
-  ctx.fillText(`${flr((timeNow()-timeinc)/4000+(timeinc/1000))}`, X(600), Y(235), X(30));
+  ctx.fillText(`${flr((timeNow()-timeinc)/4000+(timeinc/1000))}`, X(600), Y(245), X(30));
   ctx.fillRect(X(675), Y(15), X(2), Y(195));
-  ctx.fillText(`${flr((timeNow()-timeinc)/2000+(timeinc/1000))}`, X(670), Y(235), X(30));
+  ctx.fillText(`${flr((timeNow()-timeinc)/2000+(timeinc/1000))}`, X(670), Y(245), X(30));
   ctx.fillRect(X(747.5), Y(15), X(2), Y(195));
-  ctx.fillText(`${flr((timeNow()-timeinc)/4000*3+(timeinc/1000))}`, X(742.5), Y(235), X(30));
+  ctx.fillText(`${flr((timeNow()-timeinc)/4000*3+(timeinc/1000))}`, X(742.5), Y(245), X(30));
   ctx.fillRect(X(820), Y(15), X(2), Y(195));
-  ctx.fillText(`${flr(timeNow()/1000)}`, X(815), Y(235), X(30));
+  ctx.fillText(`${flr(timeNow()/1000)}`, X(815), Y(245), X(30));
   ctx.lineWidth = X(3);
   if (frame_ > 0) {
     for (let i = 0; i < states.length; i++) {
@@ -281,7 +291,7 @@ function biggraph() {
     }
   }
 }
-function updateGraph() {
+function graph() {
   let max = 2;
   let start = style.graphmove ? (frame_ < 160 ? 0:frame_-160):0;
   let timeinc = start*(1000/fps);
@@ -296,44 +306,41 @@ function updateGraph() {
       }
     }
   }
-  grp.font = `${X(9)}px Monospace`;
-  grp.fillStyle = "#ffffff";
-  grp.fillRect(0, 0, graph_.width, graph_.height);
-  grp.fillStyle = "#d0d0d0";
-  grp.fillRect(X(35), Y(10), X(165), Y(1));
-  grp.fillText(`${max}`, X(10), Y(15), X(20));
-  grp.fillRect(X(35), Y(50), X(165), Y(1));
-  grp.fillText(`${Math.floor(max/2)}`, X(10), Y(55), X(20));
-  grp.fillRect(X(35), Y(90), X(165), Y(1));
-  grp.fillText("0", X(10), Y(95), X(20));
-  grp.fillRect(X(40), Y(5), X(1), Y(90));
-  grp.fillText(`${flr(timeinc/1000)}`, X(40), Y(105), X(30));
-  grp.fillRect(X(75), Y(5), X(1), Y(90));
-  grp.fillText(`${flr((timeNow()-timeinc)/4000/20*18+(timeinc/1000))}`, X(70), Y(105), X(30));
-  grp.fillRect(X(110), Y(5), X(1), Y(90));
-  grp.fillText(`${flr((timeNow()-timeinc)/2000/20*18+(timeinc/1000))}`, X(110), Y(105), X(30));
-  grp.fillRect(X(145), Y(5), X(1), Y(90));
-  grp.fillText(`${flr((timeNow()-timeinc)/4000*3/20*18+(timeinc/1000))}`, X(145), Y(105), X(30));
-  grp.fillRect(X(180), Y(5), X(1), Y(90));
-  grp.fillText(`${flr((timeNow()-timeinc)/1000/20*18+(timeinc/1000))}`, X(180), Y(105), X(30));
-  grp.lineWidth = X(2);
+  ctx.font = `${X(9)}px Monospace`;
+  ctx.fillStyle = "#d0d0d0";
+  ctx.fillRect(X(685), Y(20), X(165), Y(1));
+  ctx.fillText(`${max}`, X(660), Y(25), X(20));
+  ctx.fillRect(X(685), Y(60), X(165), Y(1));
+  ctx.fillText(`${Math.floor(max/2)}`, X(660), Y(65), X(20));
+  ctx.fillRect(X(685), Y(100), X(165), Y(1));
+  ctx.fillText("0", X(660), Y(105), X(20));
+  ctx.fillRect(X(690), Y(15), X(1), Y(90));
+  ctx.fillText(`${flr(timeinc/1000)}`, X(690), Y(105), X(30));
+  ctx.fillRect(X(725), Y(15), X(1), Y(90));
+  ctx.fillText(`${flr((timeNow()-timeinc)/4000/20*18+(timeinc/1000))}`, X(720), Y(105), X(30));
+  ctx.fillRect(X(760), Y(15), X(1), Y(90));
+  ctx.fillText(`${flr((timeNow()-timeinc)/2000/20*18+(timeinc/1000))}`, X(760), Y(105), X(30));
+  ctx.fillRect(X(795), Y(15), X(1), Y(90));
+  ctx.fillText(`${flr((timeNow()-timeinc)/4000*3/20*18+(timeinc/1000))}`, X(795), Y(105), X(30));
+  ctx.fillRect(X(830), Y(15), X(1), Y(90));
+  ctx.fillText(`${flr((timeNow()-timeinc)/1000/20*18+(timeinc/1000))}`, X(830), Y(105), X(30));
+  ctx.lineWidth = X(2);
   if (frame_ > 0) {
     for (let i = 0; i < states.length; i++) {
       if (!(states[i].hidden || states[i].hiddengraph)) {
-        grp.beginPath();
+        ctx.beginPath();
         for (let x = 0; x < 160; x++) {
           let ci = Math.floor(x/160*size)+start;
-          let y = 90-(counts[ci][i]/max*80);
+          let y = 100-(counts[ci][i]/max*80);
           if (x == 0) {
-            grp.moveTo(X(x+40), Y(y));
+            ctx.moveTo(X(x+690), Y(y));
           } else {
-            grp.lineTo(X(x+40), Y(y));
+            ctx.lineTo(X(x+690), Y(y));
           }
         }
-        grp.strokeStyle = states[i].color + (states[i].transparent ? "80":"ff");
-        grp.stroke();
+        ctx.strokeStyle = states[i].color + (states[i].transparent ? "80":"ff");
+        ctx.stroke();
       }
     }
   }
-  graph = grp.getImageData(0, 0, graph_.width, graph_.height);
 }

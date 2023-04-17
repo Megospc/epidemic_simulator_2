@@ -1,33 +1,37 @@
-class Cell {
+class Cell { //основной класс
   constructor(id, x, y, state) {
-    this.x = testCordMinMax(x ?? random(options.size), style.size);
-    this.y = testCordMinMax(y ?? random(options.size), style.size);
-    this.speed = { x: random(options.speed)-(options.speed/2), y: random(options.speed)-(options.speed/2) };
-    this.state = 0;
-    this.id = id;
+    //установка позиции:
+    this.x = x ?? random(options.size-style.size)+(style.size/2);
+    this.y = y ?? random(options.size-style.size)+(style.size/2);
+    
+    this.speed = { x: random(options.speed)-(options.speed/2), y: random(options.speed)-(options.speed/2) }; //установка скорорости
+    
+    //инициализация:
+    this.state = 0; 
     this.alive = true;
+    this.id = id;
     this.time = timeNow();
     this.st = states[0];
     this.infectable = false;
     this.frame = this.state ? 0:false;
     this.teleportated = false;
-    this.magnet = { x: 0, y: 0 };
+    this.magnet = null;
     this.infect = this.st.infect ?? this.state;
     this.infectable = this.st.zone && this.st.prob;
     this.parasitetime = false;
     this.relived = false;
     this.speedc = 1;
     this.type = "cell";
+    this.landscape();
+    this.NaN = false;
+    
+    //обновление счётчика:
     counter.cells++;
     this.st.count.cells++;
-    if (state) this.toState(state);
-    {
-      let px = options.size/landscape.res;
-      this.land = { x: Math.floor(this.x/px), y: Math.floor(this.y/px) };
-      this.land.type = this.st.antiland > rnd() ? 0:landscape.type[this.land.x][this.land.y];
-      this.land.pow = landscape.pow[this.land.x][this.land.y];
-    }
-    {
+    
+    if (state) this.toState(state, true);
+    
+    { //установка "дома"
       let shome = { minx: style.size/2, miny: style.size/2, maxx: options.size-(style.size/2), maxy: options.size-(style.size/2) };
       if (options.quar) {
         this.home = { minx: Math.max(style.size/2, this.x-options.quar), miny: Math.max(style.size/2, this.y-options.quar), maxx: Math.min(options.size-(style.size/2), this.x+options.quar), maxy: Math.min(options.size-(style.size/2), this.y+options.quar) };
@@ -36,31 +40,36 @@ class Cell {
       }
     }
   }
-  toState(state, init) {
+  toState(state, init) { //метод перехода в другое состояние
     if (this.alive) {
       let laststate = this.st;
-      this.st.count.cells--;
-      if (this.st.allone) {
+      this.st.count.cells--; //обновление счётчика
+      
+      if (this.st.allone) { //свойство "все за одного"
         this.st.allone = false;
         for (let i = 0; i < arr.length; i++) {
           if (arr[i].id != this.id && arr[i].state == this.state) arr[i].toState(state);
         }
         this.st.allone = true;
       }
+      
       this.state = state;
       this.time = timeNow();
       this.frame = frame_;
       this.st = states[state];
       this.infect = this.st.infect ? this.st.infect-1:this.state;
-      this.st.count.cells++;
-      if (this.st.teleporto && !init) {
+      
+      this.st.count.cells++; //обновление счётчика
+      
+      if (this.st.teleporto && !init) { //свойство "телепорт"
         this.teleportated = { st: laststate, x: this.x, y: this.y }
         this.x = testCordMinMax(this.x+random(this.st.teleporto*2+1)-this.st.teleporto, style.size);
         this.y = testCordMinMax(this.y+random(this.st.teleporto*2+1)-this.st.teleporto, style.size);
       } else {
         this.teleportated = false;
       }
-      if (this.st.prob && this.st.zone) {
+      
+      if (this.st.prob && this.st.zone) { //свойство "отдых" и проверка зарожаимости
         if (this.st.rest) {
           this.restend = timeNow()+this.st.rest;
           this.infectable = false;
@@ -73,110 +82,128 @@ class Cell {
     }
   }
   timeend() {
-    if (rnd() <= this.st.heal) {
+    if (rnd() <= this.st.heal) { //свойство "излечение"
       if (this.st.transform >= 0) this.toState(this.st.transform);
       else this.toState(Math.floor(random(states.length)));
     } else {
       this.dead();
     }
   }
-  dead() {
+  dead() { //метод "смерти"
     if (this.alive) {
-      if (this.land.type == 11 && this.land.pow > rnd()) {
+      if (this.land.type == 11 && this.land.pow > rnd()) { //ландшафт "лагерь"
         this.toState(0);
       } else {
+        //обновление:
         this.alive = false;
         this.time = timeNow();
         this.frame = frame_;
+        
         if (!this.st.after) {
           this.infectable = false;
+          //обновление счётчика:
           this.st.count.cells--;
           counter.cells--;
-        } else {
+        } else { //свойство "инфекция после смерти"
           if (!this.infectable) {
+            //обновление счётчика:
             this.st.count.cells--;
             counter.cells--;
           }
         }
-        if (this.st.mosquito) {
+        if (this.st.mosquito) { //свойство "москиты"
           for (let i = 0; i < this.st.mosquito; i++) {
             mosq.push(new Mosquito(mosq.length, this.x, this.y, this.state));
           }
         }
       }
-      if (this.land.type == 6 && this.land.pow > rnd()) arr.push(new Rat(arr.length, this.x, this.y));
+      if (this.land.type == 6 && this.land.pow > rnd()) arr.push(new Rat(arr.length, this.x, this.y)); //ландшафт "свалка"
     }
   }
-  handler() {
+  handler() { //метод обработчика
     if (this.alive) {
-      if (this.land.type == 1 && this.land.pow > rnd()) this.dead();
-      if (this.land.type == 12 && this.land.pow/(this.st.builder ? 100:1) > rnd()) this.dead();
-      if (this.state && this.land.type == 2 && this.land.pow > rnd()) this.toState(0);
-      if (this.land.type == 7 && this.land.pow > rnd() && this.st.allergy != -1) this.toState(this.st.allergy);
-      if (this.alive && this.land.type == 13 && this.land.pow > rnd()) { this.dead(); arr[this.id] = new Rat(this.id, this.x, this.y, this.state); }
-      if (this.state && this.land.type == 9 && this.land.pow > rnd() && this.st.waterscary) this.dead();
-      if (this.land.type == 10 && this.land.pow/1000 > rnd()) explosion();
-      if (this.st.time && this.time+this.st.time <= timeNow()) this.timeend();
+      //обработка ландшафтов:
+      if (this.land.type == 1 && this.land.pow > rnd()) this.dead(); //"отравленная зона"
+      if (this.land.type == 12 && this.land.pow/(this.st.builder ? 100:1) > rnd()) this.dead(); //"строительная зона"
+      if (this.state && this.land.type == 2 && this.land.pow > rnd()) this.toState(0); //"санитарная зона"
+      if (this.land.type == 7 && this.land.pow > rnd() && this.st.allergy != -1) this.toState(this.st.allergy); //"аллергенная зона"
+      if (this.land.type == 13 && this.land.pow > rnd()) {
+        this.dead();
+        arr[this.id] = new Rat(this.id, this.x, this.y, this.state);
+      } //"магическая зона"
+      if (this.state && this.land.type == 9 && this.land.pow > rnd() && this.st.waterscary) this.dead(); //"морская зона"
+      if (this.land.type == 10 && this.land.pow/1000 > rnd()) explosion(); //"взрывоопасная зона"
+      
+      if (this.st.time && this.time+this.st.time <= timeNow()) this.timeend(); //обработка "срока жизни"
     }
-    if (this.restend && this.restend < timeNow() && this.alive) {
+    
+    if (this.restend && this.restend < timeNow() && this.alive) { //свойство "отдых"
       this.infectable = true;
       this.restend = false;
     }
-    if (!this.alive && this.infectable && this.st.after+this.time < timeNow()) {
+    
+    if (!this.alive && this.infectable && this.st.after+this.time < timeNow()) { //свойство "инфекция после смерти"
       this.infectable = false;
       this.st.count.cells--;
       counter.cells--;
     }
-    if (!this.alive && this.st.relivetime && this.time+this.st.relivetime < timeNow() && !this.relived) {
+    
+    if (!this.alive && this.st.relivetime && this.time+this.st.relivetime < timeNow() && !this.relived) { //свойство "воскрешение"
       if (this.st.reliveprob > rnd()) arr[this.id] = new Cell(this.id, this.x, this.y, this.st.transform);
-      else this.relived = true;
+      else this.relived = true; //уже пытался "возродиться"
     }
-    if ((this.infectable || (this.st.magnet && this.st.magnetpow && this.alive) || (this.st.parasite && this.alive)) && this.frame !== frame_) {
-      let inzone = 0;
-      for (let i = 0; i < arr.length; i++) {
+    
+    if ((this.infectable || (this.st.magnet && this.st.magnetpow && this.alive) || (this.st.parasite && this.alive)) && this.frame !== frame_) { //проверка "заражения"
+      let inzone = 0; //счётчик клеток в зоне заражения
+      for (let i = 0; i < arr.length; i++) { //проверка всех клеток
         let p = arr[i];
-        if (p.state != this.infect && p.state != this.state && p.alive && (!this.st.group || this.st.group != p.st.group)) {
-          if (p.type == "cell" && p.x >= this.x-this.st.magnet && p.x <= this.x+this.st.magnet && p.y >= this.y-this.st.magnet && p.y <= this.y+this.st.magnet) {
-            let srt = Math.sqrt(((this.x-p.x)**2)+((this.y-p.y)**2));
-            let c = (1-(srt/this.st.magnet))**2;
+        if (p.state != this.infect && p.state != this.state && p.alive && (!this.st.group || this.st.group != p.st.group)) { //проверка "не мой ли это друг?"
+          if (p.type == "cell" && this.st.magnet && this.st.magnetpow && p.x >= this.x-this.st.magnet && p.x <= this.x+this.st.magnet && p.y >= this.y-this.st.magnet && p.y <= this.y+this.st.magnet) { //свойство "магнит"
+            let c = (this.st.magnet-Math.sqrt(((this.x-p.x)**2)+((this.y-p.y)**2)))/this.st.magnet; //расстояние
+            p.magnet = p.magnet ?? { x: 0, y: 0 };
             p.magnet.y += p.y < this.y ? this.st.magnetpow*c:-this.st.magnetpow*c;
             p.magnet.x += p.x < this.x ? this.st.magnetpow*c:-this.st.magnetpow*c;
           }
-          if (((this.land.type == 3 && this.land.pow > rnd() && p.land.type == 3 && p.type == "cell") || (this.x-this.st.zone <= p.x && this.x+this.st.zone >= p.x && this.y-this.st.zone <= p.y && this.y+this.st.zone >= p.y)) && ! (this.land.type == 14 && this.land.pow > rnd() && p.land.type == 14 && p.type == "cell")) {
+          if (((this.land.type == 3 && this.land.pow > rnd() && p.land.type == 3 && p.type == "cell") /* ландшафт "зона биологической опасности" */ || (this.x-this.st.zone <= p.x && this.x+this.st.zone >= p.x && this.y-this.st.zone <= p.y && this.y+this.st.zone >= p.y)) && ! (this.land.type == 14 && this.land.pow > rnd() && p.land.type == 14 && p.type == "cell") /* ландшафт "зона строгого контроля" */) { //проверка зоны заражения
             inzone++;
-            if (this.st.stopping) p.speedc *= 1-this.st.stopping;
-            if (rnd() < this.st.prob+(p.st.defect ?? 0)+(this.land.type == 5 ? this.land.pow:0) && (p.st.protect ?? 0)-(this.st.spikes ?? 0) < rnd()) {
-              if (rnd() < this.st.killer) {
+            if (this.st.stopping) p.speedc *= 1-this.st.stopping; //свойство "остановка"
+            if (rnd() < this.st.prob /* свойство "вероятность" */+(p.st.defect ?? 0 /* свойство "уязвимость" */)+(this.land.type == 5 ? this.land.pow:0 /* ландшафт "зона повышенного заражения */) && (p.st.protect ?? 0 /* свойство "защита" */)-(this.st.spikes ?? 0 /* свойство "шипы" */) < rnd()) { //проверка вероятности заражения
+              if (rnd() < this.st.killer) { //свойство "убийца"
                 p.dead();
               } else {
                 p.toState(this.infect);
               }
-              for (let i = 0; i < this.st.farinf; i++) arr[Math.floor(random(arr.length))].toState(this.state);
+              for (let i = 0; i < this.st.farinf; i++) arr[Math.floor(random(arr.length))].toState(this.state); //свойство "дальняя атака
             } else {
-              if (rnd() < this.st.attacktrans && p.state != this.st.transform) {
+              if (rnd() < this.st.attacktrans && p.state != this.st.transform) { //свойство "переатака"
                 p.toState(this.transform ?? 0);
               } else {
-                if (rnd() < p.st.cattack) this.toState(p.state);
+                if (rnd() < p.st.cattack) this.toState(p.state); //свойство "контратака"
               }
             }
           }
         }
       }
-      if (this.alive && inzone == 0 && this.st.parasite) {
+      if (this.alive && inzone == 0 && this.st.parasite) { //свойство "паразит"
         if (!this.parasitetime) this.parasitetime = timeNow();
       } else {
         this.parasitetime = false;
       }
     }
-    if (this.st.parasite && this.alive && this.parasitetime && this.parasitetime+this.st.parasite < timeNow()) this.dead();
+    
+    if (this.st.parasite && this.alive && this.parasitetime && this.parasitetime+this.st.parasite < timeNow()) this.dead(); //свойство "паразит"
   }
-  move() {
+  move() { //метод движения
     if (this.alive) {
-      if (this.st.crazy/10 > rnd()) this.speed = { x: random(options.speed)-(options.speed/2), y: random(options.speed)-(options.speed/2) };
-      let c = this.land.type == 4 ? 1-(this.land.pow):1;
-      if (this.st.robber && options.quar) this.home = { minx: Math.max(style.size/2, this.x-options.quar), miny: Math.max(style.size/2, this.y-options.quar), maxx: Math.min(options.size-(style.size/2), this.x+options.quar), maxy: Math.min(options.size-(style.size/2), this.y+options.quar) };
+      if (this.st.crazy/10 > rnd()) this.speed = { x: random(options.speed)-(options.speed/2), y: random(options.speed)-(options.speed/2) }; //свойство "сумасшедший"
+      
+      let c = this.land.type == 4 ? 1-(this.land.pow):1; //ландшафт "пляжная зона"
+      
+      if (this.st.robber && options.quar) this.home = { minx: Math.max(style.size/2, this.x-options.quar), miny: Math.max(style.size/2, this.y-options.quar), maxx: Math.min(options.size-(style.size/2), this.x+options.quar), maxy: Math.min(options.size-(style.size/2), this.y+options.quar) }; //свойство "грабитель"
+      
       let home = Object.assign({}, this.home);
-      if (!this.st.builder) {
+      
+      if (!this.st.builder) { //свойство "строитель"
         let px = options.size/landscape.res;
         if (this.land.x != landscape.res-1) {
           if (landscape.type[this.land.x+1][this.land.y] == 12) home.maxx = Math.min(home.maxx, ((this.land.x+1)*px)-(style.size/2));
@@ -191,29 +218,31 @@ class Cell {
           if (landscape.type[this.land.x][this.land.y-1] == 12) home.miny = Math.max(home.miny, (this.land.y*px)+(style.size/2));
         }
       }
-      this.x += (this.speed.x*(this.st.speed ?? 1)*c*this.speedc)+this.magnet.x;
-      this.y += (this.speed.y*(this.st.speed ?? 1)*c*this.speedc)+this.magnet.y;
+      
+      let magnet = this.magnet ?? { x: 0, y: 0 };
+      
+      //движение:
+      this.x += (this.speed.x*(this.st.speed ?? 1)*c*this.speedc)+magnet.x;
+      this.y += (this.speed.y*(this.st.speed ?? 1)*c*this.speedc)+magnet.y;
+      
+      //проверка касания края
       if (this.x < home.minx) this.speed.x *=-1, this.x = home.minx;
       if (this.x > home.maxx) this.speed.x *=-1, this.x = home.maxx;
       if (this.y < home.miny) this.speed.y *=-1, this.y = home.miny;
       if (this.y > home.maxy) this.speed.y *=-1, this.y = home.maxy;
-      {
-        let px = options.size/landscape.res;
-        this.land = { x: Math.floor(this.x/px), y: Math.floor(this.y/px) };
-        this.land.type = this.st.antiland > rnd() ? 0:landscape.type[this.land.x][this.land.y];
-        this.land.pow = landscape.pow[this.land.x][this.land.y];
-      }
+      
+      this.landscape();
     }
   }
-  render() {
-    if (!this.st.invisible) {
+  render() { //метод отрисовки на холсте
+    if (!this.st.invisible) { //свойство "невидимка"
       if (this.alive) {
         let f = function(o) {
           let trans = o.st.transparent ? 128:255;
           ctx.fillStyle = o.st.color + ahex(trans);
           ctx.fillRect(X((o.x-(style.size/2))*scale+15), Y((o.y-(style.size/2))*scale+15), X(style.size*scale), Y(style.size*scale));
         };
-        if (this.teleportated) {
+        if (this.teleportated) { //отрисовка "телепортации"
           if (frame_ < this.frame+5 && style.anim && this.frame !== false) {
             let fram = frame_-this.frame;
             let cellTrans = this.st.transparent ? 128:255;
@@ -227,12 +256,12 @@ class Cell {
           } else f(this);
         } else {
           f(this);
-          if ((this.magnet.x || this.magnet.y) && style.anim) {
+          if (this.magnet && style.anim) { //отрисовка "магнита"
             let trans = this.st.transparent ? 64:128;
             ctx.fillStyle = this.st.color + ahex(trans);
             ctx.fillRect(X((this.x-(style.size))*scale+15), Y((this.y-(style.size))*scale+15), X(style.size*2*scale), Y(style.size*2*scale));
           } else {
-            if (frame_ < this.frame+5 && style.chanim && this.frame !== false) {
+            if (frame_ < this.frame+5 && style.chanim && this.frame !== false) { //отрисовка заражения
               let fram = frame_-this.frame;
               let cellTrans = this.st.transparent ? 128:255;
               let trans = ahex(cellTrans*(5-fram)/10);
@@ -243,7 +272,7 @@ class Cell {
           }
         }
       } else {
-        if (frame_ < this.frame+15 && style.deadanim) {
+        if (frame_ < this.frame+15 && style.deadanim) { //отрисовка "смерти"
           let fram = frame_-this.frame;
           let size = (fram/7.5+1)*style.size;
           let cellTrans = this.st.transparent ? 128:255;
@@ -254,9 +283,9 @@ class Cell {
       }
     }
   }
-  first() {
+  first() { //метод пре-отрисовки (для элементов нижнего слоя)
     if (!this.alive) {
-      if (this.infectable) {
+      if (this.infectable) { //отрисовка "инфекции после смерти"
         let cellTrans = this.st.transparent ? 128:255;
         let fill = (x, y, s, x_, y_, c) => {
           ctx.fillStyle = c;
@@ -267,7 +296,7 @@ class Cell {
         fill(-0.75, 0.75, 1, this.x, this.y, this.st.color + ahex(cellTrans/3*(style.anim ? Math.sin(degToRad(frame_*30+180))+1:1)));
         fill(0.75, 0.75, 0.8, this.x, this.y, this.st.color + ahex(cellTrans/3*(style.anim ? Math.sin(degToRad(frame_*30))+1:1)));
       } else {
-        if (style.dots) {
+        if (style.dots) { //отрисовка "следов"
           let cellTrans = this.st.transparent ? 128:255;
           ctx.fillStyle = (style.dots.color == "ill" ? this.st.color:style.dots.color) + (style.dots.transparent ? ahex(cellTrans-80):"");
           ctx.fillRect(X(this.x*scale+15-(style.dots.size/2)), Y(this.y*scale+15-(style.dots.size/2)), X(style.dots.size*scale), Y(style.dots.size*scale));
@@ -275,77 +304,93 @@ class Cell {
       }
     }
   }
-  end() {
-    this.magnet = { x: 0, y: 0 };
+  end() { //метод окончания обработки
+    this.magnet = null;
     this.speedc = 1;
   }
+  landscape() { //метод проверки ландшафта
+    let px = options.size/landscape.res;
+    this.land = { x: Math.floor(this.x/px), y: Math.floor(this.y/px) };
+    this.land.type = this.st.antiland > rnd() ? 0:landscape.type[this.land.x][this.land.y];
+    this.land.pow = landscape.pow[this.land.x][this.land.y];
+  }
 }
-class  Mosquito {
+class  Mosquito { //класс "москита"
   constructor(id, x, y, state) {
+    this.speed = { x: random(options.mosquitospeed)-(options.mosquitospeed/2), y: random(options.mosquitospeed)-(options.mosquitospeed/2) }; //установка скорости
+    //инициализация:
     this.x = x;
     this.y = y;
-    this.speed = { x: random(options.mosquitospeed)-(options.mosquitospeed/2), y: random(options.mosquitospeed)-(options.mosquitospeed/2) };
     this.state = state;
     this.id = id;
     this.alive = true;
     this.st = states[this.state];
     this.time = timeNow();
     this.type = "mosquito";
-    {
-      let px = options.size/landscape.res;
-      this.land = { x: Math.floor(this.x/px), y: Math.floor(this.y/px) };
-      this.land.type = landscape.type[this.land.x][this.land.y];
-      this.land.pow = landscape.pow[this.land.x][this.land.y];
-    }
+    this.landscape();
   }
-  render() {
+  render() { //метод отрисовки на холсте
     if (this.alive) {
       let x_ = style.anim ? Math.cos(degToRad(frame_*30))*style.mosquitosize*1.5:0;
       let y_ = style.anim ? Math.sin(degToRad(frame_*30))*style.mosquitosize*1.5:0;
       let trans = this.st.transparent ? 128:255;
+      
       ctx.fillStyle = this.st.color + ahex(trans);
       ctx.fillRect(X(testCordMinMax(this.x-(style.mosquitosize/2)+x_, style.mosquitosize)*scale+15), Y(testCordMinMax(this.y-(style.mosquitosize/2)+y_, style.mosquitosize)*scale+15), X(style.mosquitosize*scale), Y(style.mosquitosize*scale));
       ctx.fillStyle = this.st.color + ahex(trans/2);
       ctx.fillRect(X(testCordMinMax(this.x-(style.mosquitosize)+x_, style.mosquitosize*2)*scale+15), Y(testCordMinMax(this.y-(style.mosquitosize)+y_, style.mosquitosize*2)*scale+15), X(style.mosquitosize*2*scale), Y(style.mosquitosize*2*scale)); 
     }
   }
-  handler() {
-    if (this.land.type == 8 && this.land.pow > rnd()) this.alive = false;
-    if (this.alive) {
-      for (let i = 0; i < arr.length; i++) {
+  handler() { //метод обработчика
+    if (this.land.type == 8 && this.land.pow > rnd()) this.alive = false; //ландшафт "охотничья зона"
+    
+    if (this.alive) { //проверка заражения
+      for (let i = 0; i < arr.length; i++) { //проверка всех остальных клеток
         let p = arr[i];
-        if (p.state != this.state && p.alive) {
-          if (this.x - options.mosquitozone <= p.x && this.x + options.mosquitozone >= p.x && this.y - options.mosquitozone <= p.y && this.y + options.mosquitozone >= p.y) {
-            if (rnd() < options.mosquitoprob && (p.st.protect ?? 0) < rnd()) {
+        if (p.state != this.state && p.alive && (!this.st.group || this.st.group != p.st.group)) { //прверка "не мой ли это друг?"
+          if (this.x - options.mosquitozone <= p.x && this.x + options.mosquitozone >= p.x && this.y - options.mosquitozone <= p.y && this.y + options.mosquitozone >= p.y) { //проверка зоны заражения
+            if (rnd() < options.mosquitoprob && (p.st.protect ?? 0 /* свойство "защита" */) < rnd()) { //проверка вероятности
               p.toState(this.state);
             }
           }
         }
       }
-      if (options.mosquitotime && this.time+options.mosquitotime < timeNow()) this.alive = false;
-      {
+      
+      if (options.mosquitotime && this.time+options.mosquitotime < timeNow()) this.alive = false; //проверка "срока жизни"
+      
+      { //блок движения
         let home = { minx: style.mosquitosize/2, miny: style.mosquitosize/2, maxx: options.size-(style.mosquitosize/2), maxy: options.size-(style.mosquitosize) };
+        
+        //движение:
         this.x += this.speed.x;
         this.y += this.speed.y;
+        
+        //проверка касания края:
         if (this.x < home.minx) this.speed.x *=-1, this.x = home.minx;
         if (this.x > home.maxx) this.speed.x *=-1, this.x = home.maxx;
         if (this.y < home.miny) this.speed.y *=-1, this.y = home.miny;
         if (this.y > home.maxy) this.speed.y *=-1, this.y = home.maxy;
-        {
-          let px = options.size/landscape.res;
-          this.land = { x: Math.floor(this.x/px), y: Math.floor(this.y/px) };
-          this.land.type = landscape.type[this.land.x][this.land.y];
-          this.land.pow = landscape.pow[this.land.x][this.land.y];
-        }
+        
+        this.landscape();
       }
     }
   }
+  landscape() { //метод проверки ландшафта
+    let px = options.size/landscape.res;
+    this.land = { x: Math.floor(this.x/px), y: Math.floor(this.y/px) };
+    this.land.type = landscape.type[this.land.x][this.land.y];
+    this.land.pow = landscape.pow[this.land.x][this.land.y];
+  }
 }
-class Rat {
+class Rat { //класс "крысы"
   constructor(id, x, y, state) {
-    this.x = x ?? random(options.size);
-    this.y = y ?? random(options.size);
-    this.speed = { x: random(options.ratspeed)-(options.ratspeed/2), y: random(options.ratspeed)-(options.ratspeed/2) };
+    //установка позиции
+    this.x = x ?? random(options.size-style.ratsize)+(style.ratsize/2);
+    this.y = y ?? random(options.size-style.ratsize)+(style.ratsize/2);
+    
+    this.speed = { x: random(options.ratspeed)-(options.ratspeed/2), y: random(options.ratspeed)-(options.ratspeed/2) }; //установка скорости
+    
+    //инициализация:
     this.state = state ?? 0;
     this.id = id;
     this.alive = true;
@@ -356,70 +401,78 @@ class Rat {
     this.infect = this.st.infect ?? this.state;
     this.infectable = this.st.zone && this.st.prob;
     this.type = "rat";
+    if (state) this.toState(state);
+    
+    //обновление счётчика:
     counter.rats++;
     this.st.count.rats++;
-    {
-      let px = options.size/landscape.res;
-      this.land = { x: Math.floor(this.x/px), y: Math.floor(this.y/px) };
-      this.land.type = landscape.type[this.land.x][this.land.y];
-      this.land.pow = landscape.pow[this.land.x][this.land.y];
-    }
-    if (state) this.toState(state);
+    
+    this.landscape();
   }
-  toState(state) {
+  toState(state) { //метод перехода в другое состояние
     if (this.alive) {
       let laststate = this.st;
+      
+      //обновление счётчика:
       this.st.count.rats--;
       this.state = state;
+      
       this.time = timeNow();
       this.frame = frame_;
       this.st = states[this.state];
       this.infect = this.st.infect ? this.st.infect-1:this.state;
-      this.st.count.rats++;
       this.infectable = this.st.prob && this.st.zone;
+      this.st.count.rats++; //обновление счётчика
     }
   }
-  dead() {
+  dead() { //метод "смерти"
     if (this.alive) {
       this.alive = false;
       this.time = timeNow();
       this.frame = frame_;
+      
+      //обновление счётчика:
       this.st.count.rats--;
       counter.rats--;
     }
   }
-  handler() {
-    if (this.land.type == 8 && this.land.pow > rnd()) this.dead();
-    if (this.infectable && this.frame !== frame_) {
-      for (let i = 0; i < arr.length; i++) {
+  handler() { //метод обработчика
+    if (this.land.type == 8 && this.land.pow > rnd()) this.dead(); //ландшафт "охотничья зона"
+    if (this.alive && this.land.type == 15 && this.land.pow > rnd()) {
+        this.dead();
+        arr[this.id] = new Cell(this.id, this.x, this.y, this.state);
+      } //ландшафт "человечья зона"
+    
+    if (this.infectable && this.frame !== frame_) { //проверка заражения
+      for (let i = 0; i < arr.length; i++) { //проверка всех клеток
         let p = arr[i];
-        if (p.state != this.infect && p.state != this.state && p.alive && p.type == "cell") {
-          if (this.x-this.st.zone <= p.x && this.x+this.st.zone >= p.x && this.y-this.st.zone <= p.y && this.y+this.st.zone >= p.y) {
-            if (rnd() < this.st.prob && (p.st.protect ?? 0) < rnd()) p.toState(this.infect);
+        if (p.state != this.infect && p.state != this.state && p.alive && p.type == "cell") { //проверка "не мой ли это друг?" и "простая ли это клетка?"
+          if (this.x-this.st.zone <= p.x && this.x+this.st.zone >= p.x && this.y-this.st.zone <= p.y && this.y+this.st.zone >= p.y) { //проверка зоны заражения
+            if (rnd() < this.st.prob && (p.st.protect ?? 0 /* свойство "защита" */) < rnd()) p.toState(this.infect); //проверка вероятности заражения
           }
         }
       }
     }
   }
-  move() {
+  move() { //метод движения
     if (this.alive) {
       let home = { minx: style.ratsize/2, miny: style.ratsize/2, maxx: options.size-(style.ratsize/2), maxy: options.size-(style.ratsize/2) };
+      
+      //движение:
       this.x += this.speed.x;
       this.y += this.speed.y;
+      
+      //проверка касания края:
       if (this.x < home.minx) this.speed.x *=-1, this.x = home.minx;
       if (this.x > home.maxx) this.speed.x *=-1, this.x = home.maxx;
       if (this.y < home.miny) this.speed.y *=-1, this.y = home.miny;
       if (this.y > home.maxy) this.speed.y *=-1, this.y = home.maxy;
-      {
-        let px = options.size/landscape.res;
-        this.land = { x: Math.floor(this.x/px), y: Math.floor(this.y/px) };
-        this.land.type = landscape.type[this.land.x][this.land.y];
-        this.land.pow = landscape.pow[this.land.x][this.land.y];
-      }
+      
+      this.landscape();
     }
   }
-  render() {
-    if (!this.st.invisible) {
+  render() { //метод отрисовки на холсте
+    if (!this.st.invisible) { //свойство "неаидимка"
       let fig = function(obj, size) {
         let px = size*style.ratsize;
         let l = px/2;
@@ -434,7 +487,7 @@ class Rat {
         let trans = this.st.transparent ? 128:255;
         ctx.fillStyle = this.st.color + ahex(trans);
         fig(this, 1);
-        if (frame_ < this.frame+5 && style.chanim && this.frame !== false) {
+        if (frame_ < this.frame+5 && style.chanim && this.frame !== false) { //отрисовка перехода в другое состояние
           let fram = frame_-this.frame;
           let cellTrans = this.st.transparent ? 128:255;
           let trans = ahex(cellTrans*(5-fram)/10);
@@ -442,7 +495,7 @@ class Rat {
           fig(this, 2);
         }
       } else {
-        if (frame_ < this.frame+15 && style.deadanim) {
+        if (frame_ < this.frame+15 && style.deadanim) { //отрисовка "смерти"
           let fram = frame_-this.frame;
           let size = fram/7.5+1;
           let cellTrans = this.st.transparent ? 128:255;
@@ -453,15 +506,22 @@ class Rat {
       }
     }
   }
-  first() {}
-  end() {}
+  landscape() { //метод проверки ландшафта
+    let px = options.size/landscape.res;
+    this.land = { x: Math.floor(this.x/px), y: Math.floor(this.y/px) };
+    this.land.type = landscape.type[this.land.x][this.land.y];
+    this.land.pow = landscape.pow[this.land.x][this.land.y];
+  }
+  first() {} //метод пре-отрисовки (пока не нужен)
+  end() {}  //метод конца обработки (пока не нужен)
 }
-function frame() {
+function frame() { //метод обработки и отрисовки кадра
   if (counter.cells+counter.rats > 0 || !options.stop) {
     let FPS = Math.floor(10000/(performance.now()-lastTime))/10;
     let start = performance.now();
     lastTime = performance.now();
-    if (!pause) {
+    
+    if (!pause) { //запись счётчиков в "архив"
       let counts_ = [];
       for (let i = 0; i < states.length; i++) {
         counts_[i] = states[i].count.cells+states[i].count.rats;
@@ -469,11 +529,14 @@ function frame() {
       counts.sum = counter.cells+counter.rats;
       counts.push(counts_);
     }
-    clear();
+    
+    clear(); //очистка холста
     ctx.fillStyle = "#d0d0d0";
     ctx.fillRect(0, 0, X(450), Y(450));
     ctx.fillStyle ="#ffffff";
     ctx.fillRect(X(15), Y(15), X(420), Y(420));
+    
+    //отрисовка ландшафтов:
     let px = 420/landscape.res;
     for (let x = 0; x < landscape.res; x++) {
       for (let y = 0; y < landscape.res; y++) {
@@ -481,13 +544,16 @@ function frame() {
         ctx.fillRect(X(x*px+15), Y(y*px+15), X(px), Y(px));
       }
     }
+    
     if (!pause) {
-      for (let i = 0; i < arr.length; i++) {
+      for (let i = 0; i < arr.length; i++) { //обработка простых клеток и крыс
         arr[i].handler();
       }
-      for (let i = 0; i < mosq.length; i++) {
+      for (let i = 0; i < mosq.length; i++) { //обработка москитов
         mosq[i].handler();
       }
+      
+      //свойство "добавка"
       for (let i = 0; i < states.length; i++) {
         let ill = states[i];
         if (ill.addtime && ill.addcount && (ill.countadd == 0 || ill.added < ill.countadd)) {
@@ -501,24 +567,27 @@ function frame() {
         }
       }
     }
-    for (let i = 0; i < arr.length; i++) {
+    
+    for (let i = 0; i < arr.length; i++) { //отрисовка нижнего плана крыс и простых клеток
       arr[i].first();
     }
-    for (let i = 0; i < arr.length; i++) {
+    for (let i = 0; i < arr.length; i++) { //отрисовка крыс и простых клеток
       arr[i].render();
     }
-    for (let i = 0; i < mosq.length; i++) {
+    for (let i = 0; i < mosq.length; i++) { //отрисовка москитов
       mosq[i].render();
     }
+    
     if (!pause) {
-      for (let i = 0; i < arr.length; i++) {
+      for (let i = 0; i < arr.length; i++) { //движение крыс и простых клеток
         arr[i].move();
       }
       for (let i = 0; i < arr.length; i++) {
         arr[i].end();
       }
     }
-    if (!style.onlygame) {
+    
+    if (!style.onlygame) { //отрисовка статистики
       ctx.font = `${X(18)}px Monospace`;
       ctx.fillStyle = "#000000";
       ctx.fillText(`Время: ${flr(timeNow()/1000)}с`, X(490), Y(style.biggraph ? 260:30));
@@ -526,32 +595,38 @@ function frame() {
       if (!style.biggraph) ctx.fillText("Статистика:", X(490), Y(120));
       ctx.fillText(`${counter.cells+counter.rats}${counter.rats > 0 ? ` (${counter.cells})`:""} | сумма`, X(490), Y(style.biggraph ? 350:150));
       sort();
+      
       ctx.font = `${X(Math.min(Math.floor(9/states.length*18), 18))}px Monospace`;
-      if (style.biggraph) {
-        biggraph();
-      } else {
-        for (let i = 0; i < sorted.length; i++) {
+      
+      //отрисовка графиков и статистики
+      if (style.biggraph) biggraph();
+      else {
+        for (let i = 0; i < sorted.length; i++) { //отрисовка статистики
           let st = sorted[i];
           ctx.fillStyle = st.color + (st.transparent ? "80":"ff");
           ctx.fillText(`${st.count.cells+st.count.rats}${st.count.rats ? ` (${st.count.cells})`:""} | ${st.name} ${st.invisible? "(невидим)":""}`, X(490), Y(180+(i*Math.min(Math.floor(9/states.length*30), 30))));
         }
-        if (frame_%(options.graph ?? 1) == 0) updateGraph();
-        ctx.putImageData(graph, X(650), Y(10));
+        
+        graph();
       }
     }
+    
     ctx.fillStyle = "#d0d0d0";
     ctx.fillRect(0, 0, X(450), Y(15));
     ctx.fillRect(0, Y(435), X(450), Y(15));
     ctx.fillRect(0, 0, X(15), Y(450));
     ctx.fillRect(X(435), 0, X(15), Y(450));
     ctx.fillStyle = "#d0d0d0";
-    if (pause) {
+    if (pause) { //отрисовка "паузы"
+      //кнопка "продолжить":
       ctx.beginPath();
       ctx.moveTo(X(850), Y(400));
       ctx.lineTo(X(870), Y(415));
       ctx.lineTo(X(850), Y(430));
       ctx.closePath();
       ctx.fill();
+      
+      //кнопка "заново":
       ctx.fillRect(X(800), Y(400), X(30), Y(30));
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(X(807), Y(407), X(16), Y(16));
@@ -563,6 +638,8 @@ function frame() {
       ctx.lineTo(X(818), Y(410));
       ctx.closePath();
       ctx.fill();
+      
+      //кнопка "полный экран":
       ctx.beginPath();
       ctx.moveTo(X(760), Y(400));
       ctx.lineTo(X(770), Y(400));
@@ -588,6 +665,8 @@ function frame() {
       ctx.closePath();
       ctx.fill();
       ctx.fillRect(X(770), Y(410), X(10), Y(10));
+      
+      //кнопка "логи":
       for (let i = 0; i < 4; i++) ctx.fillRect(X(725), Y(400+(i*5)), X(25), Y(2));
       for (let i = 0; i < 2; i++) ctx.fillRect(X(730), Y(420+(i*5)), X(20), Y(2));
       ctx.strokeStyle = "#d0d0d0";
@@ -602,9 +681,11 @@ function frame() {
       ctx.fillRect(X(870), Y(400), X(10), Y(30));
       frame_++;
     }
+    
     let perf = performance.now()-start;
     if (!pause) stats.push({ perf: perf, sum: counter.cells+counter.rats });
-    if (!style.onlygame) {
+    
+    if (!style.onlygame) { //отрисовка статистики
       ctx.fillStyle = "#000000";
       ctx.font = `${X(18)}px Monospace`;
       ctx.fillText(`Расчёт: ${Math.floor(perf)}мс`, X(490), Y(style.biggraph ? 320:90));
@@ -614,24 +695,30 @@ function frame() {
     clearInterval(interval);
   }
 }
-function click(e) {
+function click(e) { //обоаботчик события 'click'
   let c = cw/900;
+  
+  //получение координат клика
   let x = (e.pageX-cx)/c;
   let y = (e.pageY-cy)/c;
-  if (x > 850 && y > 400) {
+  
+  if (x > 850 && y > 400) { //кнопка "пауза/продолжить"
     vib(50);
     pause = !pause;
   }
-  if (pause && x > 800 && x < 850 && y > 400) {
+  
+  if (pause && x > 800 && x < 850 && y > 400) { //кнопка "заново"
     vib(100);
     start();
     pause = false;
   }
-  if (pause && x > 760 && x < 790 && y > 400) {
+  
+  if (pause && x > 760 && x < 790 && y > 400) { //кнопка "полный экран"
     vib(100);
     fullScreen(document.documentElement);
   }
-  if (pause && x > 720 && x < 750 && y > 400) {
+  if (pause && x > 720 && x < 750 && y > 400) { //кнопка "логи"
+    //генерация логов:
     let fast = { num: 1000/fps };
     let slow = { num: 1000/fps };
     let frames = "";
@@ -658,7 +745,7 @@ ${frames}`;
     sessionStorage.setItem("epidemic_simulator_logs", logs);
     open('logs.html');
   }
-  if (!pause && options.healzone && y >= 15 && y <= 435 && x >= 15 && x <= 435) {
+  if (!pause && options.healzone && y >= 15 && y <= 435 && x >= 15 && x <= 435) { //"излечение кликом"
     vib(30);
     let x_ = (x-15)/420*options.size;
     let y_ = (y-15)/420*options.size;
@@ -672,9 +759,11 @@ ${frames}`;
     heals++;
   }
 }
-function start() {
+function start() { //метод инициализации
   let rats = 0;
   let cells = 0;
+  
+  //установка переменным изначальные значения:
   arr = [];
   counts = [];
   mosq = [];
@@ -684,6 +773,8 @@ function start() {
   heals = 0;
   counter = { cells: 0, rats: 0 };
   states[0].count = { cells: 0, rats: 0 };
+  
+  //заполнение массивов:
   for (let i = 1, j = 0; i < states.length; i++) {
     let ill = states[i];
     ill.count = { cells: 0, rats: 0 };
@@ -706,10 +797,13 @@ function start() {
   for (let i = arr.length; rats < options.ratcount; i++, rats++) {
     arr.push(new Rat(i));
   }
+  
   sort();
 }
-start();
-addEventListener('click', () => {
+
+start(); //инициализация
+
+addEventListener('click', () => { //стартовый клик
   vib(100);
   date = Date.now();
   music.loop = true;

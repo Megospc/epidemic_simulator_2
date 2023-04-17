@@ -13,7 +13,8 @@ const lands = [
   { color: "#408020", bcolor: "#307010", name: "лагерьная зона" },
   { color: "#000000", bcolor: "#202020", name: "строительная зона" },
   { color: "#5000a0", bcolor: "#400090", name: "магическая зона" },
-  { color: "#a05000", bcolor: "#a04000", name: "зона строгого конроля" }
+  { color: "#a05000", bcolor: "#a04000", name: "зона строгого конроля" },
+  { color: "#a07800", bcolor: "#907000", name: "человеческая зона" }
 ];
 const props = [
   { title: "Коэффициент скорости:", type: "num", id: "speed", check: [0, 3, false], default: 1, form: "${num}", aform: "${num}" },
@@ -438,7 +439,7 @@ function readgame(json) {
       log("Проверка states...");
       if (obj.states[0] && obj.states.length) {
         log("Проверка options...");
-        if (obj.options.count && obj.options.speed) {
+        if (typeof obj.options.count != 'undefined' && obj.options.speed) {
           log("Проверка style...");
           if (obj.style.size) {
             log("Проверка landscape...");
