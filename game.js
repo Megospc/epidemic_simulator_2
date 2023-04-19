@@ -315,15 +315,15 @@ function graph() {
   ctx.fillRect(X(685), Y(100), X(165), Y(1));
   ctx.fillText("0", X(660), Y(105), X(20));
   ctx.fillRect(X(690), Y(15), X(1), Y(90));
-  ctx.fillText(`${flr(timeinc/1000)}`, X(690), Y(105), X(30));
+  ctx.fillText(`${flr(timeinc/1000)}`, X(690), Y(115), X(30));
   ctx.fillRect(X(725), Y(15), X(1), Y(90));
-  ctx.fillText(`${flr((timeNow()-timeinc)/4000/20*18+(timeinc/1000))}`, X(720), Y(105), X(30));
+  ctx.fillText(`${flr((timeNow()-timeinc)/4000/20*18+(timeinc/1000))}`, X(720), Y(115), X(30));
   ctx.fillRect(X(760), Y(15), X(1), Y(90));
-  ctx.fillText(`${flr((timeNow()-timeinc)/2000/20*18+(timeinc/1000))}`, X(760), Y(105), X(30));
+  ctx.fillText(`${flr((timeNow()-timeinc)/2000/20*18+(timeinc/1000))}`, X(760), Y(115), X(30));
   ctx.fillRect(X(795), Y(15), X(1), Y(90));
-  ctx.fillText(`${flr((timeNow()-timeinc)/4000*3/20*18+(timeinc/1000))}`, X(795), Y(105), X(30));
+  ctx.fillText(`${flr((timeNow()-timeinc)/4000*3/20*18+(timeinc/1000))}`, X(795), Y(115), X(30));
   ctx.fillRect(X(830), Y(15), X(1), Y(90));
-  ctx.fillText(`${flr((timeNow()-timeinc)/1000/20*18+(timeinc/1000))}`, X(830), Y(105), X(30));
+  ctx.fillText(`${flr((timeNow()-timeinc)/1000/20*18+(timeinc/1000))}`, X(830), Y(115), X(30));
   ctx.lineWidth = X(2);
   if (frame_ > 0) {
     for (let i = 0; i < states.length; i++) {
