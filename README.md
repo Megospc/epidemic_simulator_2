@@ -9,14 +9,8 @@
 **Доступна [новая версия](https://github.com/Megospc/epidemic_simulator_3 "GitHub")**[![](https://megospc.github.io/epidemic_simulator/assets/icon.svg "icon.svg")](https://megospc.github.io/epidemic_simulator_3 "GitHub Pages")
 
 ## Особенности:
-- [ ] события
 - [x] ландшафты
-- [ ] свойства 3-его уровня
 - [x] свойства 2-ого уровня
 - [x] свойства 1-ого уровня
 - [x] ландшафты 1-ого уровня
-- [ ] ландшафты 2-ого уровня
-- [x] расширенная палитра цветов
-- [ ] события 1-ого уровня
 - [x] крысы
-- [ ] шары
